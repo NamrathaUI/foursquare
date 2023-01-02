@@ -13,4 +13,5 @@ public interface IAuthService {
     UserResponse updatePassword(String email, String newPassword) throws InvalidUserCredentialException;
 
     String generateOtp();
+
 }
