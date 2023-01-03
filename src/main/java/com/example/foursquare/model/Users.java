@@ -25,7 +25,6 @@ public class Users {
                     "one special character with minimum length 6")
     private String password;
 
-
     private String profilePic;
 
     private String isDeleted;

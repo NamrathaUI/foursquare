@@ -1,5 +1,6 @@
 package com.example.foursquare.controller;
 
+import com.example.foursquare.exception.CustomException;
 import com.example.foursquare.exception.InvalidUserCredentialException;
 import com.example.foursquare.jwtutils.JwtUserDetailsService;
 import com.example.foursquare.jwtutils.TokenManager;
@@ -33,7 +34,11 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     ResponseEntity<?> register(@Valid @RequestBody Users users) throws InvalidUserCredentialException {
-        return ResponseEntity.ok(iAuthService.signUp(users));
+        try {
+            return ResponseEntity.ok(iAuthService.signUp(users));
+        } catch (com.example.foursquare.exception.CustomException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @PostMapping("/login")
@@ -49,16 +54,20 @@ public class AuthenticationController {
         return ResponseEntity.ok(new JwtResponseModel(jwtToken,email,userId));
     }
     @GetMapping("/forgot")
-    ResponseEntity<?> forgotPassword(@RequestHeader String email) throws InvalidUserCredentialException {
+    ResponseEntity<?> forgotPassword(@RequestHeader String email) throws CustomException {
         return ResponseEntity.of(Optional.of(iAuthService.forgotPassword(email)));
     }
     @PostMapping("/otp-verify")
-    ResponseEntity<?> otpVerify(@RequestHeader Integer sentOtp, @RequestHeader String email) throws InvalidUserCredentialException {
+    ResponseEntity<?> otpVerify(@RequestHeader Integer sentOtp, @RequestHeader String email) throws CustomException {
         return ResponseEntity.ok(iAuthService.verifyOtp(sentOtp, email));
     }
     @PatchMapping("/password")
-    ResponseEntity<?> updatePassword(@RequestHeader String email, @RequestHeader String newPassword) throws InvalidUserCredentialException {
-        return ResponseEntity.ok(iAuthService.updatePassword(email, newPassword));
+    ResponseEntity<?> updatePassword(@RequestHeader String email, @RequestHeader String newPassword) throws CustomException {
+        try {
+            return ResponseEntity.ok(iAuthService.updatePassword(email, newPassword));
+        } catch (com.example.foursquare.exception.CustomException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

@@ -12,6 +12,14 @@ import java.util.Collection;
 import java.util.List;
 
 public class MyUserDetails  implements UserDetails {
+    public Users getUsers() {
+        return users;
+    }
+
+    public void setUsers(Users users) {
+        this.users = users;
+    }
+
     private Users users;
 
 

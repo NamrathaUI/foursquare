@@ -1,5 +1,6 @@
 package com.example.foursquare.advice;
 
+import com.example.foursquare.exception.CustomException;
 import com.example.foursquare.exception.InvalidUserCredentialException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.SQLGrammarException;
@@ -83,6 +84,12 @@ public class ControllerAdvice {
         stringStringMap.put("error message", " already added");
         return  new ResponseEntity<>(stringStringMap,HttpStatus.BAD_REQUEST);
 
+    }
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<?> myException(CustomException myException) {
+        Map<String, String> stringStringMap = new HashMap<>();
+        stringStringMap.put("error message",myException.getMessage());
+        return new ResponseEntity<>(stringStringMap, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
