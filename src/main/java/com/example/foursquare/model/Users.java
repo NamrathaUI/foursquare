@@ -14,7 +14,9 @@ import javax.validation.constraints.Pattern;
 
 public class Users {
     private long userId;
-
+    @NotBlank(message = "name cannot be blank")
+    private String name;
+    @NotBlank(message = "email cannot be blank")
     private String email;
 
     private String phoneNumber;

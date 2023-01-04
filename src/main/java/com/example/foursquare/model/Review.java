@@ -4,15 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Ratings {
-    private long ratingId;
+public class Review {
+    private long reviewId;
     private long userId;
-    private float numberOfStarsRated;
+    private String review;
     private long placeId;
-
+    private LocalDate reviewDate;
 }

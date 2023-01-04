@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReviewPhotos {
-    private long ratingId;
+    private long reviewId;
     private String reviewPics;
 }

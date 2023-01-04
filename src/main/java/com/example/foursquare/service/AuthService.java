@@ -36,7 +36,7 @@ public class AuthService implements IAuthService {
         boolean val = systemInterface.verifyDuplicateEmail(users.getEmail());
         if (systemInterface.verifyDuplicateEmail(users.getEmail())) {
             users.setPassword(new BCryptPasswordEncoder().encode(users.getPassword()));
-            jdbcTemplate.update("insert into users(email,phone_number,password) values(?,?,?)", users.getEmail(), users.getPhoneNumber(), users.getPassword());
+            jdbcTemplate.update("insert into users(name,email,phone_number,password) values(?,?,?,?)",users.getName(), users.getEmail(), users.getPhoneNumber(), users.getPassword());
             return new UserResponse("Account is created");
         }
         throw new CustomException("Provided details are already existing");
