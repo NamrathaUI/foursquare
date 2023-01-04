@@ -36,7 +36,7 @@ public class AuthService implements IAuthService {
         boolean val = systemInterface.verifyDuplicateEmail(users.getEmail());
         if (systemInterface.verifyDuplicateEmail(users.getEmail())) {
             users.setPassword(new BCryptPasswordEncoder().encode(users.getPassword()));
-            jdbcTemplate.update("insert into users(name,email,phone_number,password) values(?,?,?,?)",users.getName(), users.getEmail(), users.getPhoneNumber(), users.getPassword());
+            jdbcTemplate.update("insert into users(name,email,phone_number,password) values(?,?,?,?)", users.getName(), users.getEmail(), users.getPhoneNumber(), users.getPassword());
             return new UserResponse("Account is created");
         }
         throw new CustomException("Provided details are already existing");
@@ -103,6 +103,7 @@ public class AuthService implements IAuthService {
         throw new CustomException("Please provide password at least one uppercase letter,one lowercase letter,one number and " +
                 "one special character with minimum length 6");
     }
+
     @Override
     public String generateOtp() {
         return new DecimalFormat("0000").format(new Random().nextInt(9999));

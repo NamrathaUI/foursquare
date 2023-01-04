@@ -12,6 +12,7 @@ public class JwtRequestModel implements Serializable {
 
     public JwtRequestModel() {
     }
+
     public JwtRequestModel(String source, String password) {
         super();
         this.email = source;

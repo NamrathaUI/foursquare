@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -47,7 +48,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/**/login", "/**/register","/**/forgot","/**/otp-verify","/**/password").permitAll()
+                .antMatchers("/**/login", "/**/register", "/**/forgot", "/**/otp-verify", "/**/password","/**/view/**").permitAll()
                 /*.antMatchers("/admin/**").hasAuthority("Admin")
                 .antMatchers("/user/**").hasAnyAuthority("user", "Admin")*/
                 .anyRequest().authenticated()

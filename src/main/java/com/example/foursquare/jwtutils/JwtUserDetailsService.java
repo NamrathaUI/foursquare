@@ -15,14 +15,13 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class JwtUserDetailsService  implements UserDetailsService {
-@Autowired
+public class JwtUserDetailsService implements UserDetailsService {
+    @Autowired
     JdbcTemplate jdbcTemplate;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-//        User user = userRepository.getUserBySource(email);
-       List<Users> users=jdbcTemplate.query("select * from users where email=?",new BeanPropertyRowMapper<>(Users.class),email);
+        List<Users> users = jdbcTemplate.query("select * from users where email=?", new BeanPropertyRowMapper<>(Users.class), email);
         if (users != null) {
             return new MyUserDetails((Users) users.get(0));
         } else {

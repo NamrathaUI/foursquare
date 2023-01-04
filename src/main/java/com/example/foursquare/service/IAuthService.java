@@ -6,7 +6,8 @@ import com.example.foursquare.responseModel.UserResponse;
 
 public interface IAuthService {
     UserResponse signUp(Users users) throws CustomException;
-    UserResponse forgotPassword(String email) throws  CustomException;
+
+    UserResponse forgotPassword(String email) throws CustomException;
 
     UserResponse verifyOtp(int otp, String email) throws CustomException;
 

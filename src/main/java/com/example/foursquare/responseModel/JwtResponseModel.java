@@ -27,12 +27,12 @@ public class JwtResponseModel implements Serializable {
         this.userId = userId;
     }
 
-    private  long userId;
+    private long userId;
 
-    public JwtResponseModel(String token, String name,long userId) {
+    public JwtResponseModel(String token, String name, long userId) {
         this.token = token;
         this.name = name;
-        this.userId=userId;
+        this.userId = userId;
     }
 
     public String getToken() {

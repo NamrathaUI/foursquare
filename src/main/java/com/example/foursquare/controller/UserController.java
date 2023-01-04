@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,18 +47,22 @@ public class UserController {
         return ResponseEntity.ok(iUserService.giveRatings(userDetails.getUsers(), placeId, rating));
     }
     @PostMapping("/review")
-    ResponseEntity<?> review(@RequestParam Long placeId,@RequestParam String review , @RequestPart @Nullable MultipartFile file) throws IOException {
+    ResponseEntity<?> review(@RequestParam Long placeId,@RequestParam String review , @RequestPart @Nullable List<MultipartFile> file) throws IOException {
 
-        String url="";
-        Map result = null;
-        if (file == null)
-            url=null;
-        else if (file.isEmpty())
-            url=null;
-        else
-            result = uploadToCloudInterface.uploadImage(file.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
-        if (result != null)
-            url = result.get("secure_url").toString();
+        List<String> url=new ArrayList<>();
+
+        for(MultipartFile m: file){
+            Map result = null;
+            if (file == null)
+                url=null;
+            else if (file.isEmpty())
+                url=null;
+            else
+                result = uploadToCloudInterface.uploadImage(m.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+            if (result != null)
+                url.add(result.get("secure_url").toString())  ;
+        }
+
         try {
             MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -67,5 +72,20 @@ public class UserController {
         }
 
     }
-
+    @GetMapping("/view/review")
+    ResponseEntity<?> getReview(@RequestParam long placeId){
+        return ResponseEntity.ok(iUserService.viewReview(placeId));
+    }
+    @GetMapping("/view/nearMe")
+    ResponseEntity<?> nearMe(@Param("latitude") Double latitude, @Param("longitude") Double longitude) {
+        return ResponseEntity.ok(iUserService.nearMe(latitude,longitude));
+    }
+    @GetMapping("/view/topPick")
+    ResponseEntity<?> topPick(@Param("latitude") Double latitude, @Param("longitude") Double longitude) {
+        return ResponseEntity.ok(iUserService.topPick(latitude,longitude));
+    }
+    @GetMapping("/view/popular")
+    ResponseEntity<?> popular(@Param("latitude") Double latitude, @Param("longitude") Double longitude) {
+        return ResponseEntity.ok(iUserService.popular(latitude,longitude));
+    }
 }

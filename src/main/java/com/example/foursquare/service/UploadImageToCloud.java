@@ -6,16 +6,17 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Map;
+
 @Service
-public class UploadImageToCloud implements ImageUploadInterface{
+public class UploadImageToCloud implements ImageUploadInterface {
     private final Cloudinary cloudinary;
+
     public UploadImageToCloud() {
         cloudinary = Singleton.getCloudinary();
         cloudinary.config.cloudName = "dbwyfnr2a";
         cloudinary.config.apiSecret = "QEDhtucjJDNi9pmkDW6rKsGOypA";
         cloudinary.config.apiKey = "821198275669225";
     }
-
 
 
     @Override

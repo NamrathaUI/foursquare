@@ -7,7 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SystemService implements SystemInterface{
+public class SystemService implements SystemInterface {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;

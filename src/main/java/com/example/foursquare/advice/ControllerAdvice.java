@@ -27,7 +27,7 @@ public class ControllerAdvice {
     @ExceptionHandler(InvalidUserCredentialException.class)
     public ResponseEntity<?> exception(InvalidUserCredentialException invalidUserCredentialException) {
         Map<String, String> stringStringMap = new HashMap<>();
-        stringStringMap.put("error message","Invalid User Credentials");
+        stringStringMap.put("error message", "Invalid User Credentials");
         return new ResponseEntity<>(stringStringMap, HttpStatus.BAD_REQUEST);
     }
 
@@ -35,14 +35,14 @@ public class ControllerAdvice {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<?> handleNoSuchElement(NoSuchElementException noSuchElementException) {
         Map<String, String> stringStringMap = new HashMap<>();
-        stringStringMap.put("error message","no element found");
-        return new ResponseEntity<>(stringStringMap,HttpStatus.BAD_REQUEST);
+        stringStringMap.put("error message", "no element found");
+        return new ResponseEntity<>(stringStringMap, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(EmptyResultDataAccessException.class)
     public ResponseEntity<?> noData(EmptyResultDataAccessException e) {
         Map<String, String> stringStringMap = new HashMap<>();
-        stringStringMap.put("error message","Data not found");
+        stringStringMap.put("error message", "Data not found");
         return new ResponseEntity<>(stringStringMap, HttpStatus.NOT_FOUND);
     }
 
@@ -66,15 +66,15 @@ public class ControllerAdvice {
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public ResponseEntity<?> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException sqlIntegrityConstraintViolationException) {
         Map<String, String> stringStringMap = new HashMap<>();
-        stringStringMap.put("error message",sqlIntegrityConstraintViolationException.getMessage());
-        return  new ResponseEntity<>(stringStringMap,HttpStatus.BAD_REQUEST);
+        stringStringMap.put("error message", sqlIntegrityConstraintViolationException.getMessage());
+        return new ResponseEntity<>(stringStringMap, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<?> ConstraintViolationException(ConstraintViolationException exception) {
         Map<String, String> stringStringMap = new HashMap<>();
         stringStringMap.put("error message", "Already Created");
-        return  new ResponseEntity<>(stringStringMap,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(stringStringMap, HttpStatus.BAD_REQUEST);
 
     }
 
@@ -82,13 +82,14 @@ public class ControllerAdvice {
     public ResponseEntity<?> DataIntegrityViolationException(DataIntegrityViolationException exception) {
         Map<String, String> stringStringMap = new HashMap<>();
         stringStringMap.put("error message", " already added");
-        return  new ResponseEntity<>(stringStringMap,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(stringStringMap, HttpStatus.BAD_REQUEST);
 
     }
+
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<?> myException(CustomException myException) {
         Map<String, String> stringStringMap = new HashMap<>();
-        stringStringMap.put("error message",myException.getMessage());
+        stringStringMap.put("error message", myException.getMessage());
         return new ResponseEntity<>(stringStringMap, HttpStatus.BAD_REQUEST);
     }
 
@@ -96,7 +97,7 @@ public class ControllerAdvice {
     public ResponseEntity<?> UserNotFound(UsernameNotFoundException usernameNotFoundException) {
         Map<String, String> stringStringMap = new HashMap<>();
         stringStringMap.put("error message", "User not found");
-        return  new ResponseEntity<>(stringStringMap,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(stringStringMap, HttpStatus.BAD_REQUEST);
 
     }
 
@@ -105,21 +106,21 @@ public class ControllerAdvice {
     public ResponseEntity<?> invalidRequestMethod() {
         Map<String, String> stringStringMap = new HashMap<>();
         stringStringMap.put("error message", "Please check the request method");
-        return  new ResponseEntity<>(stringStringMap,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(stringStringMap, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<?> badCredential() {
         Map<String, String> stringStringMap = new HashMap<>();
         stringStringMap.put("error message", "Invalid user name or password");
-        return  new ResponseEntity<>(stringStringMap,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(stringStringMap, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<?> disabled() {
         Map<String, String> stringStringMap = new HashMap<>();
         stringStringMap.put("error message", "user disabled");
-        return  new ResponseEntity<>(stringStringMap,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(stringStringMap, HttpStatus.BAD_REQUEST);
     }
 
 }
