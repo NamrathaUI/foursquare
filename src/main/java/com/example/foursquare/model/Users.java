@@ -21,6 +21,8 @@ public class Users {
 
     private String phoneNumber;
 
+    private String role;
+
     @NotBlank(message = "password must not be blank")
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$&*])(?=\\S+$).{6,250}$",
             message = "Please provide password at least one uppercase letter,one lowercase letter,one number and " +

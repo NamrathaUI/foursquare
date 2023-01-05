@@ -55,11 +55,25 @@ public class UserController {
         MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(iUserService.giveRatings(userDetails.getUsers(), placeId, rating));
     }
+    @GetMapping("/view/ratings")
+    ResponseEntity<?> getRatings(@RequestParam long placeId) {
+        return ResponseEntity.ok(iUserService.viewRatings(placeId));
+    }
+
 
     @PostMapping("/feedback")
     ResponseEntity<String> feedback(@RequestParam String feedback) {
         MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(iUserService.giveFeedback(userDetails.getUsers(), feedback));
+    }
+    @GetMapping("/view/feedbacks")
+    List<Feedback> viewFeedBack() {
+        return iUserService.viewFeedback();
+    }
+    @GetMapping("/feedback")
+    public ResponseEntity< List<Feedback> >feedback(@RequestParam long userId) {
+        MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(iUserService.feedback(userDetails.getUsers(),userId ));
     }
 
     @PostMapping("/review")
@@ -109,10 +123,6 @@ public class UserController {
         return ResponseEntity.ok(iUserService.popular(latitude, longitude));
     }
 
-    @GetMapping("/view/ratings")
-    ResponseEntity<?> getRatings(@RequestParam long placeId) {
-        return ResponseEntity.ok(iUserService.viewRatings(placeId));
-    }
 
     @PatchMapping("/profile")
     ResponseEntity<?> updateProfile(@RequestHeader String authorization, @ModelAttribute MultipartFile file) throws IOException {
@@ -132,16 +142,12 @@ public class UserController {
 
         return ResponseEntity.of(Optional.of(iUserService.editProfile(profilePic, usersList.get(0).getUserId())));
     }
+   @GetMapping("/view/reviewPhotos")
+    ResponseEntity<?> getReviewPhotos(@RequestParam long placeId) {
+        return ResponseEntity.ok(iUserService.images(placeId));
+    }
 
-    @GetMapping("/view/feedbacks")
-    List<Feedback> viewFeedBack() {
-        return iUserService.viewFeedback();
-    }
-    @GetMapping("/feedback")
-   public ResponseEntity< List<Feedback> >feedback(@RequestParam long userId) {
-        MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok(iUserService.feedback(userDetails.getUsers(),userId ));
-    }
+
 
 }
 

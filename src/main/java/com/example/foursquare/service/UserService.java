@@ -2,11 +2,7 @@ package com.example.foursquare.service;
 
 import com.example.foursquare.exception.CustomException;
 import com.example.foursquare.model.*;
-import com.example.foursquare.requestModel.SearchRequest;
-import com.example.foursquare.responseModel.PlaceOverviewResponse;
-import com.example.foursquare.responseModel.PlaceResponse;
-import com.example.foursquare.responseModel.ReviewResponse;
-import com.example.foursquare.responseModel.UserResponse;
+import com.example.foursquare.responseModel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -293,28 +289,35 @@ public class UserService implements IUserService {
 
     @Override
     public String giveFeedback(Users users, String feedback) {
-        List<Feedback> feedbacks = jdbcTemplate.query("select *from feedback where user_id=?", new BeanPropertyRowMapper<>(Feedback.class),users.getUserId());
+        List<Feedback> feedbacks = jdbcTemplate.query("select *from feedback where user_id=?", new BeanPropertyRowMapper<>(Feedback.class), users.getUserId());
         if (feedbacks.isEmpty()) {
             jdbcTemplate.update("insert into feedback(user_id,feedback) values(?,?) ", users.getUserId(), feedbacks);
-        }
-        else{
-            jdbcTemplate.update("update feedback set feedback=? where user_id=?",feedback,users.getUserId());
+        } else {
+            jdbcTemplate.update("update feedback set feedback=? where user_id=?", feedback, users.getUserId());
         }
         return "feedback added successfully";
     }
 
- /*   @Override
-    public List<PlaceOverviewResponse> viewPlaces(long placeId) {
-        return null;
+    @Override
+    public List<Feedback> viewFeedback() {
+        return jdbcTemplate.query("select *from feedback", new BeanPropertyRowMapper<>(Feedback.class));
+    }
 
+    @Override
+    public List<Feedback> feedback(Users users, long userId) {
+        return jdbcTemplate.query("select *from feedback where user_id=?", new BeanPropertyRowMapper<>(Feedback.class), userId);
+    }
+
+    @Override
+    public List<ImageResponse> images(long placeId) {
+        List<ImageResponse> strings= jdbcTemplate.query("select * from review_photos where review_id in(select review_id from review where place_id=?)",new BeanPropertyRowMapper<>(ImageResponse.class),placeId );
+    return strings;
+    }
+
+/*    @Override
+    public List<ReviewPhotos> reviewPhotos(long reviewId) {
+        return jdbcTemplate.query("select review_pics from review_photos where review_id=?",new BeanPropertyRowMapper<>(ReviewPhotos.class),reviewId);
     }*/
 
-
-
-    /*@Override
-    public List<PlaceResponse> search(SearchRequest searchRequest) {
-
-        return null;
-    */
 
 }
