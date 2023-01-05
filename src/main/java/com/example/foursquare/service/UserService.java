@@ -2,14 +2,17 @@ package com.example.foursquare.service;
 
 import com.example.foursquare.exception.CustomException;
 import com.example.foursquare.model.*;
+import com.example.foursquare.requestModel.SearchRequest;
+import com.example.foursquare.responseModel.PlaceOverviewResponse;
 import com.example.foursquare.responseModel.PlaceResponse;
 import com.example.foursquare.responseModel.ReviewResponse;
+import com.example.foursquare.responseModel.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.*;
@@ -271,5 +274,47 @@ public class UserService implements IUserService {
         }
         return placeResponseList;
     }
+
+    @Override
+    public List<Ratings> viewRatings(long placeId) {
+        return jdbcTemplate.query("select *from ratings where place_id=?", new BeanPropertyRowMapper<>(Ratings.class), placeId);
+    }
+
+    @Override
+    public UserResponse editProfile(String profilePic, long userId) throws IOException {
+        List<Users> usersList = jdbcTemplate.query("select *from users where user_id=?", new BeanPropertyRowMapper<>(Users.class), userId);
+        if (!(userId == usersList.get(0).getUserId())) {
+            throw new IOException("Access Denied");
+        }
+        jdbcTemplate.update("update users set profile_pic=? where user_id=?", profilePic, userId);
+
+        return new UserResponse("profile pic updated successfully");
+    }
+
+    @Override
+    public String giveFeedback(Users users, String feedback) {
+        List<Feedback> feedbacks = jdbcTemplate.query("select *from feedback where user_id=?", new BeanPropertyRowMapper<>(Feedback.class),users.getUserId());
+        if (feedbacks.isEmpty()) {
+            jdbcTemplate.update("insert into feedback(user_id,feedback) values(?,?) ", users.getUserId(), feedbacks);
+        }
+        else{
+            jdbcTemplate.update("update feedback set feedback=? where user_id=?",feedback,users.getUserId());
+        }
+        return "feedback added successfully";
+    }
+
+ /*   @Override
+    public List<PlaceOverviewResponse> viewPlaces(long placeId) {
+        return null;
+
+    }*/
+
+
+
+    /*@Override
+    public List<PlaceResponse> search(SearchRequest searchRequest) {
+
+        return null;
+    */
 
 }
