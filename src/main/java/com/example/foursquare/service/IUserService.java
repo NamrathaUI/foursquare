@@ -1,9 +1,11 @@
 package com.example.foursquare.service;
 
 import com.example.foursquare.exception.CustomException;
+import com.example.foursquare.model.Feedback;
 import com.example.foursquare.model.Ratings;
 import com.example.foursquare.model.Users;
 
+import com.example.foursquare.responseModel.PlaceOverviewResponse;
 import com.example.foursquare.responseModel.PlaceResponse;
 import com.example.foursquare.responseModel.ReviewResponse;
 import com.example.foursquare.responseModel.UserResponse;
@@ -33,6 +35,12 @@ public interface IUserService {
     UserResponse editProfile(String profilePic, long userId) throws IOException;
 
     String giveFeedback(Users users, String feedback);
+
+    List<Feedback> viewFeedback();
+
+    List<Feedback> feedback(Users users,long userId);
+
+//    List<PlaceOverviewResponse> viewPlaces(long placeId);
 
 
     // List<PlaceOverviewResponse> viewPlaces(long placeId);

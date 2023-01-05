@@ -3,6 +3,7 @@ package com.example.foursquare.controller;
 import com.cloudinary.utils.ObjectUtils;
 import com.example.foursquare.MyUserDetails;
 import com.example.foursquare.exception.CustomException;
+import com.example.foursquare.model.Feedback;
 import com.example.foursquare.model.Users;
 import com.example.foursquare.responseModel.PlaceResponse;
 import com.example.foursquare.service.IUserService;
@@ -54,10 +55,11 @@ public class UserController {
         MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(iUserService.giveRatings(userDetails.getUsers(), placeId, rating));
     }
+
     @PostMapping("/feedback")
-    ResponseEntity<String> feedback(@RequestParam String feedback){
+    ResponseEntity<String> feedback(@RequestParam String feedback) {
         MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok(iUserService.giveFeedback(userDetails.getUsers(),feedback));
+        return ResponseEntity.ok(iUserService.giveFeedback(userDetails.getUsers(), feedback));
     }
 
     @PostMapping("/review")
@@ -113,9 +115,9 @@ public class UserController {
     }
 
     @PatchMapping("/profile")
-    ResponseEntity<?> updateProfile(@RequestHeader String authorization, @ModelAttribute MultipartFile file) throws  IOException {
+    ResponseEntity<?> updateProfile(@RequestHeader String authorization, @ModelAttribute MultipartFile file) throws IOException {
         MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<Users>usersList=jdbcTemplate.query("select * from users where user_id =?",new BeanPropertyRowMapper<>(Users.class),userDetails.getUsers().getUserId());
+        List<Users> usersList = jdbcTemplate.query("select * from users where user_id =?", new BeanPropertyRowMapper<>(Users.class), userDetails.getUsers().getUserId());
         String profilePic = "";
         Map result = null;
         if (file == null) {
@@ -128,7 +130,18 @@ public class UserController {
         if (result != null)
             profilePic = (result.get("secure_url").toString());
 
-        return ResponseEntity.of(Optional.of(iUserService.editProfile( profilePic, usersList.get(0).getUserId())));
+        return ResponseEntity.of(Optional.of(iUserService.editProfile(profilePic, usersList.get(0).getUserId())));
     }
+
+    @GetMapping("/view/feedbacks")
+    List<Feedback> viewFeedBack() {
+        return iUserService.viewFeedback();
     }
+    @GetMapping("/feedback")
+   public ResponseEntity< List<Feedback> >feedback(@RequestParam long userId) {
+        MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(iUserService.feedback(userDetails.getUsers(),userId ));
+    }
+
+}
 
