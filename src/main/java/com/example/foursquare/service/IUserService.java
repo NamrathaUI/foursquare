@@ -6,6 +6,7 @@ import com.example.foursquare.model.Ratings;
 import com.example.foursquare.model.ReviewPhotos;
 import com.example.foursquare.model.Users;
 
+import com.example.foursquare.requestModel.SearchRequest;
 import com.example.foursquare.responseModel.*;
 
 import java.io.IOException;
@@ -27,6 +28,9 @@ public interface IUserService {
     List<PlaceResponse> topPick(double latitude, double longitude);
 
     List<PlaceResponse> popular(double latitude, double longitude);
+    List<PlaceResponse> cafe(double latitude,double longitude);
+
+    List<PlaceResponse> lunch(double latitude, double longitude);
 
     List<Ratings> viewRatings(long placeId);
 
@@ -38,9 +42,10 @@ public interface IUserService {
 
     List<Feedback> feedback(Users users,long userId);
     List<ImageResponse> images(long placeId);
+    List<PlaceOverviewResponse> placeDetails(long placeId);
 
 
-//    List<ReviewPhotos> reviewPhotos(long reviewId);
+    List<PlaceResponse> search(String option, SearchRequest searchRequest, double latitude, double longitude) throws CustomException;
 
 
 

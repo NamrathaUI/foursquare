@@ -12,4 +12,5 @@ public class PlaceOverviewResponse {
     private String name;
     private String address;
 
+
 }

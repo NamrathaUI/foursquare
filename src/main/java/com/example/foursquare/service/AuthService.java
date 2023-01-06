@@ -108,6 +108,13 @@ public class AuthService implements IAuthService {
     public String generateOtp() {
         return new DecimalFormat("0000").format(new Random().nextInt(9999));
     }
+
+    @Override
+    public String logout(String token) {
+        jdbcTemplate.update("insert into blocked_tokens(token) values(?)", token);
+        return "logged out";
+    }
+
 }
 
 

@@ -14,5 +14,6 @@ public interface IAuthService {
     UserResponse updatePassword(String email, String newPassword) throws CustomException;
 
     String generateOtp();
+    String logout(String token);
 
 }

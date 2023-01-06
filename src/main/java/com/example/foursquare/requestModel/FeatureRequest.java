@@ -9,7 +9,7 @@ public class FeatureRequest {
     private boolean dogFriendly;
     private boolean familyFriendlyPlaces;
     private boolean inWalkingDistance;
-    private  boolean outdoorSeating;
+    private boolean outdoorSeating;
     private boolean parking;
     private boolean wiFi;
 

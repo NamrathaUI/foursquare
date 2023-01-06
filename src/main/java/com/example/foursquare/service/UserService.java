@@ -2,6 +2,7 @@ package com.example.foursquare.service;
 
 import com.example.foursquare.exception.CustomException;
 import com.example.foursquare.model.*;
+import com.example.foursquare.requestModel.SearchRequest;
 import com.example.foursquare.responseModel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -114,7 +115,7 @@ public class UserService implements IUserService {
         }
         List<Review> reviews = jdbcTemplate.query("select *from review where user_id=? and place_id=?", new BeanPropertyRowMapper<>(Review.class), users.getUserId(), placeId);
         if (reviews.isEmpty()) {
-            jdbcTemplate.update("insert into review (user_id,review,place_id,review_date) values(?,?,?,?)", users.getUserId(), review, placeId, LocalDate.now());
+            jdbcTemplate.update("insert into review (user_id,review,place_id,review_date) values(?,?,?,?)", users.getUserId(), review, placeId, LocalDateTime.now().toString());
             Integer reviewId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
             for (String s : url) {
                 if (!(s == null || s.isBlank())) {
@@ -170,8 +171,10 @@ public class UserService implements IUserService {
                 placeResponse.setImage(p.getImages());
                 placeResponse.setPhoneNumber(p.getPhoneNumber());
                 placeResponse.setDistance(Double.valueOf(df.format(distance)));
+                if(placeResponse.getDistance()<50){
+                    placeResponseList.add(placeResponse);
+                }
 
-                placeResponseList.add(placeResponse);
 
             }
         }
@@ -272,9 +275,106 @@ public class UserService implements IUserService {
     }
 
     @Override
+    public List<PlaceResponse> cafe(double latitude, double longitude) {
+        final int r = 6371;
+        longitude = Math.toRadians(longitude);
+        latitude = Math.toRadians(latitude);
+        List<Places> places = jdbcTemplate.query("select *from places where cafe=true", new BeanPropertyRowMapper<>(Places.class));
+        List<PlaceResponse> placeResponseList = new ArrayList<>();
+        if (!(places.isEmpty())) {
+
+            for (Places p : places) {
+                double lat1 = p.getLatitude();
+                double long1 = p.getLongitude();
+                long1 = Math.toRadians(long1);
+                lat1 = Math.toRadians(lat1);
+                double distance = 0;
+                distance = r * Math.acos(Math.sin(lat1) * Math.sin(latitude) + Math.cos(lat1) * Math.cos(latitude) * Math.cos(longitude - long1));
+
+
+                DecimalFormat df = new DecimalFormat();
+                df.setMaximumFractionDigits(1);
+
+                PlaceResponse placeResponse = new PlaceResponse();
+                placeResponse.setType(p.getType());
+                placeResponse.setName(p.getName());
+                placeResponse.setAddress(p.getAddress());
+                placeResponse.setRatings(p.getCurrentRatings());
+                placeResponse.setPriceRange(p.getPriceRange());
+                placeResponse.setPlaceId(p.getPlaceId());
+                placeResponse.setImage(p.getImages());
+                placeResponse.setPhoneNumber(p.getPhoneNumber());
+                placeResponse.setDistance(Double.valueOf(df.format(distance)));
+
+                placeResponseList.add(placeResponse);
+
+            }
+        }
+
+        for (int i = 0; i < placeResponseList.size() - 1; i++)
+            for (int j = 0; j < placeResponseList.size() - i - 1; j++)
+                if (placeResponseList.get(j).getDistance() > placeResponseList.get(j + 1).getDistance()) {
+                    PlaceResponse temp = placeResponseList.get(j);
+                    placeResponseList.set(j, placeResponseList.get(j + 1));
+                    placeResponseList.set(j + 1, temp);
+                }
+        return placeResponseList;
+    }
+
+    @Override
+    public List<PlaceResponse> lunch(double latitude, double longitude) {
+
+        final int r = 6371;
+        longitude = Math.toRadians(longitude);
+        latitude = Math.toRadians(latitude);
+        List<Places> places = jdbcTemplate.query("select *from places where lunch=true", new BeanPropertyRowMapper<>(Places.class));
+        List<PlaceResponse> placeResponseList = new ArrayList<>();
+        if (!(places.isEmpty())) {
+
+            for (Places p : places) {
+                double lat1 = p.getLatitude();
+                double long1 = p.getLongitude();
+                long1 = Math.toRadians(long1);
+                lat1 = Math.toRadians(lat1);
+                double distance = 0;
+                distance = r * Math.acos(Math.sin(lat1) * Math.sin(latitude) + Math.cos(lat1) * Math.cos(latitude) * Math.cos(longitude - long1));
+
+
+                DecimalFormat df = new DecimalFormat();
+                df.setMaximumFractionDigits(1);
+
+                PlaceResponse placeResponse = new PlaceResponse();
+                placeResponse.setType(p.getType());
+                placeResponse.setName(p.getName());
+                placeResponse.setAddress(p.getAddress());
+                placeResponse.setRatings(p.getCurrentRatings());
+                placeResponse.setPriceRange(p.getPriceRange());
+                placeResponse.setPlaceId(p.getPlaceId());
+                placeResponse.setImage(p.getImages());
+                placeResponse.setPhoneNumber(p.getPhoneNumber());
+                placeResponse.setDistance(Double.valueOf(df.format(distance)));
+
+                placeResponseList.add(placeResponse);
+
+            }
+        }
+
+        for (int i = 0; i < placeResponseList.size() - 1; i++)
+            for (int j = 0; j < placeResponseList.size() - i - 1; j++)
+                if (placeResponseList.get(j).getDistance() > placeResponseList.get(j + 1).getDistance()) {
+                    PlaceResponse temp = placeResponseList.get(j);
+                    placeResponseList.set(j, placeResponseList.get(j + 1));
+                    placeResponseList.set(j + 1, temp);
+                }
+        return placeResponseList;
+    }
+
+
+    @Override
     public List<Ratings> viewRatings(long placeId) {
         return jdbcTemplate.query("select *from ratings where place_id=?", new BeanPropertyRowMapper<>(Ratings.class), placeId);
     }
+
 
     @Override
     public UserResponse editProfile(String profilePic, long userId) throws IOException {
@@ -310,14 +410,188 @@ public class UserService implements IUserService {
 
     @Override
     public List<ImageResponse> images(long placeId) {
-        List<ImageResponse> strings= jdbcTemplate.query("select * from review_photos where review_id in(select review_id from review where place_id=?)",new BeanPropertyRowMapper<>(ImageResponse.class),placeId );
-    return strings;
+        List<ImageResponse> strings = jdbcTemplate.query("select * from review_photos where review_id in(select review_id from review where place_id=?)", new BeanPropertyRowMapper<>(ImageResponse.class), placeId);
+        return strings;
     }
 
-/*    @Override
-    public List<ReviewPhotos> reviewPhotos(long reviewId) {
-        return jdbcTemplate.query("select review_pics from review_photos where review_id=?",new BeanPropertyRowMapper<>(ReviewPhotos.class),reviewId);
-    }*/
+    @Override
+    public List<PlaceOverviewResponse> placeDetails(long placeId) {
+        List<PlaceOverviewResponse> responses = jdbcTemplate.query("select * from places where place_id=?", new BeanPropertyRowMapper<>(PlaceOverviewResponse.class), placeId);
+        return responses;
+    }
 
 
+    @Override
+    public List<PlaceResponse> search(String option, SearchRequest searchRequest, double latitude, double longitude) throws CustomException {
+        final int r = 6371;
+        if (option == null || option.isBlank()) {
+            option = "";
+        }
+        String query = "select * from places join features on places.place_id=features.place_id where (name like'%" + option + "%' or address like'%" + option + "%')";
+        if (searchRequest != null) {
+            if (!(searchRequest.getPriceRange() == null))
+                query = query + " and price_range=" + searchRequest.getPriceRange();
+            if (searchRequest.getFeatureRequestList() != null) {
+                query = searchRequest.getFeatureRequestList().isAcceptsCreditCards() ? query + " and accepts_credit_cards=1" : query;
+                query = searchRequest.getFeatureRequestList().isDelivery() ? query + " and delivery=1" : query;
+                query = searchRequest.getFeatureRequestList().isParking() ? query + " and parking=1" : query;
+                query = searchRequest.getFeatureRequestList().isDogFriendly() ? query + " and dog_friendly=1" : query;
+                query = searchRequest.getFeatureRequestList().isWiFi() ? query + " and wi_fi=1" : query;
+                query = searchRequest.getFeatureRequestList().isFamilyFriendlyPlaces() ? query + " and family_friendly_places=1" : query;
+                query = searchRequest.getFeatureRequestList().isOutdoorSeating() ? query + " and outdoor_seating=1" : query;
+                query = searchRequest.getFeatureRequestList().isInWalkingDistance() ? query + " and in_walking_distance=1" : query;
+
+
+            }
+            if (searchRequest.getSortBy() != null) {
+                if (searchRequest.getSortBy().equalsIgnoreCase("ratings")) {
+                    query = query + " order by current_ratings desc";
+                }
+
+            }
+        }
+        List<Places> places = jdbcTemplate.query(query, new BeanPropertyRowMapper<>(Places.class));
+        if (places.isEmpty()) {
+            throw new CustomException("places not found");
+        }
+
+        if (searchRequest.getSortBy() != null) {
+            if (searchRequest.getSortBy().equalsIgnoreCase("distance")) {
+                List<PlaceResponse> placeList = new ArrayList<>();
+                longitude = Math.toRadians(longitude);
+                latitude = Math.toRadians(latitude);
+                for (Places p : places) {
+                    double lat1 = p.getLatitude();
+                    double long1 = p.getLongitude();
+                    long1 = Math.toRadians(long1);
+                    lat1 = Math.toRadians(lat1);
+                    double distance = 0;
+                    distance = r * Math.acos(Math.sin(lat1) * Math.sin(latitude) + Math.cos(lat1) * Math.cos(latitude) * Math.cos(longitude - long1));
+
+
+                    DecimalFormat df = new DecimalFormat();
+                    df.setMaximumFractionDigits(1);
+
+                    PlaceResponse placeResponse = new PlaceResponse();
+                    placeResponse.setType(p.getType());
+                    placeResponse.setName(p.getName());
+                    placeResponse.setAddress(p.getAddress());
+                    placeResponse.setRatings(p.getCurrentRatings());
+                    placeResponse.setPriceRange(p.getPriceRange());
+                    placeResponse.setPlaceId(p.getPlaceId());
+                    placeResponse.setImage(p.getImages());
+                    placeResponse.setPhoneNumber(p.getPhoneNumber());
+                    placeResponse.setDistance(Double.valueOf(df.format(distance)));
+                    if (searchRequest.getRadius() == null) {
+                        placeList.add(placeResponse);
+                    } else {
+                        if (placeResponse.getDistance() < searchRequest.getRadius()) {
+                            placeList.add(placeResponse);
+                        }
+                    }
+
+
+                }
+                if (searchRequest.getSortBy() != null) {
+                    if (searchRequest.getSortBy().equalsIgnoreCase("distance")) {
+                        for (int i = 0; i < placeList.size() - 1; i++)
+                            for (int j = 0; j < placeList.size() - i - 1; j++)
+                                if (placeList.get(j).getDistance() > placeList.get(j + 1).getDistance()) {
+                                    // swap arr[j+1] and arr[j]
+                                    PlaceResponse temp = placeList.get(j);
+                                    placeList.set(j, placeList.get(j + 1));
+                                    placeList.set(j + 1, temp);
+                                }
+                        return placeList;
+                    }
+                }
+            } else if (searchRequest.getSortBy().equalsIgnoreCase("popular")) {
+
+                longitude = Math.toRadians(longitude);
+                latitude = Math.toRadians(latitude);
+                List<PlaceResponse> placeResponseList = new ArrayList<>();
+                Map<Long, Integer> pid = new HashMap<>();
+                //     List<Places> places = jdbcTemplate.query("select * from places", new BeanPropertyRowMapper<>(Places.class));
+                if (!(places.isEmpty())) {
+                    for (Places p : places) {
+                        Integer count = jdbcTemplate.queryForObject("select count(*) from review where place_id = ?", Integer.class, p.getPlaceId());
+                        pid.put(p.getPlaceId(), count);
+                    }
+                }
+                List<Map.Entry<Long, Integer>> nList = new ArrayList<>(pid.entrySet());
+                nList.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));//to save map in desc we use list
+                for (Map.Entry<Long, Integer> map : nList) {
+                    List<Places> p = jdbcTemplate.query("select * from places where place_id=?", new BeanPropertyRowMapper<>(Places.class), map.getKey());
+                    double lat1 = p.get(0).getLatitude();
+                    double long1 = p.get(0).getLongitude();
+                    long1 = Math.toRadians(long1);
+                    lat1 = Math.toRadians(lat1);
+                    double distance = 0;
+                    distance = r * Math.acos(Math.sin(lat1) * Math.sin(latitude) + Math.cos(lat1) * Math.cos(latitude) * Math.cos(longitude - long1));
+
+
+                    DecimalFormat df = new DecimalFormat();
+                    df.setMaximumFractionDigits(1);
+
+                    PlaceResponse placeResponse = new PlaceResponse();
+                    placeResponse.setType(p.get(0).getType());
+                    placeResponse.setName(p.get(0).getName());
+                    placeResponse.setAddress(p.get(0).getAddress());
+                    placeResponse.setRatings(p.get(0).getCurrentRatings());
+                    placeResponse.setPriceRange(p.get(0).getPriceRange());
+                    placeResponse.setPlaceId(p.get(0).getPlaceId());
+                    placeResponse.setImage(p.get(0).getImages());
+                    placeResponse.setPhoneNumber(p.get(0).getPhoneNumber());
+                    placeResponse.setDistance(Double.valueOf(df.format(distance)));
+                    if (searchRequest.getRadius() == null) {
+                        placeResponseList.add(placeResponse);
+                    } else {
+                        if (placeResponse.getDistance() < searchRequest.getRadius()) {
+                            placeResponseList.add(placeResponse);
+                        }
+                    }
+
+
+                }
+                return placeResponseList;
+            }
+
+        }
+        List<PlaceResponse> placeList = new ArrayList<>();
+        longitude = Math.toRadians(longitude);
+        latitude = Math.toRadians(latitude);
+        for (Places p : places) {
+            double lat1 = p.getLatitude();
+            double long1 = p.getLongitude();
+            long1 = Math.toRadians(long1);
+            lat1 = Math.toRadians(lat1);
+            double distance = 0;
+            distance = r * Math.acos(Math.sin(lat1) * Math.sin(latitude) + Math.cos(lat1) * Math.cos(latitude) * Math.cos(longitude - long1));
+
+
+            DecimalFormat df = new DecimalFormat();
+            df.setMaximumFractionDigits(1);
+            PlaceResponse placeResponse = new PlaceResponse();
+            placeResponse.setPhoneNumber(p.getPhoneNumber());
+            placeResponse.setType(p.getType());
+            placeResponse.setName(p.getName());
+            placeResponse.setAddress(p.getAddress());
+            placeResponse.setRatings(p.getCurrentRatings());
+            placeResponse.setPriceRange(p.getPriceRange());
+            placeResponse.setPlaceId(p.getPlaceId());
+            placeResponse.setImage(p.getImages());
+            placeResponse.setPhoneNumber(p.getPhoneNumber());
+            placeResponse.setDistance(Double.valueOf(df.format(distance)));
+            if (searchRequest.getRadius() == null) {
+                placeList.add(placeResponse);
+            } else {
+                if (placeResponse.getDistance() < searchRequest.getRadius()) {
+                    placeList.add(placeResponse);
+                }
+            }
+
+
+        }
+        return placeList;
+    }
 }

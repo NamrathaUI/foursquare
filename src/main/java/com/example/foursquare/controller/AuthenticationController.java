@@ -9,6 +9,7 @@ import com.example.foursquare.responseModel.JwtResponseModel;
 import com.example.foursquare.service.IAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -48,10 +50,10 @@ public class AuthenticationController {
                         UsernamePasswordAuthenticationToken(email, password)
         );
         final UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        ;
-        Long userId = jdbcTemplate.queryForObject("select user_id from users where email=?", Long.class, userDetails.getUsername());
+
+        List<Users> usersList = jdbcTemplate.query("select *from users where email=?", new BeanPropertyRowMapper<>(Users.class), userDetails.getUsername());
         final String jwtToken = tokenManager.generateJwtToken(userDetails);
-        return ResponseEntity.ok(new JwtResponseModel(jwtToken, email, userId));
+        return ResponseEntity.ok(new JwtResponseModel(jwtToken, usersList.get(0).getName(), usersList.get(0).getUserId(), usersList.get(0).getEmail()));
     }
 
     @GetMapping("/forgot")
@@ -72,5 +74,9 @@ public class AuthenticationController {
             throw new RuntimeException(e);
         }
     }
+//    @PostMapping("/logout")
+//    ResponseEntity<?> logout(@RequestHeader String authorization) throws CustomException {
+//        return ResponseEntity.ok(iAuthService.logout(authorization));
+//    }
 }
 

@@ -5,6 +5,7 @@ import com.example.foursquare.MyUserDetails;
 import com.example.foursquare.exception.CustomException;
 import com.example.foursquare.model.Feedback;
 import com.example.foursquare.model.Users;
+import com.example.foursquare.requestModel.SearchRequest;
 import com.example.foursquare.responseModel.PlaceResponse;
 import com.example.foursquare.service.IUserService;
 import com.example.foursquare.service.ImageUploadInterface;
@@ -55,6 +56,7 @@ public class UserController {
         MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(iUserService.giveRatings(userDetails.getUsers(), placeId, rating));
     }
+
     @GetMapping("/view/ratings")
     ResponseEntity<?> getRatings(@RequestParam long placeId) {
         return ResponseEntity.ok(iUserService.viewRatings(placeId));
@@ -66,33 +68,35 @@ public class UserController {
         MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(iUserService.giveFeedback(userDetails.getUsers(), feedback));
     }
+
     @GetMapping("/view/feedbacks")
     List<Feedback> viewFeedBack() {
         return iUserService.viewFeedback();
     }
+
     @GetMapping("/feedback")
-    public ResponseEntity< List<Feedback> >feedback(@RequestParam long userId) {
+    public ResponseEntity<List<Feedback>> feedback() {
         MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok(iUserService.feedback(userDetails.getUsers(),userId ));
+        return ResponseEntity.ok(iUserService.feedback(userDetails.getUsers(),userDetails.getUsers().getUserId()));
     }
 
     @PostMapping("/review")
     ResponseEntity<?> review(@RequestParam Long placeId, @RequestParam String review, @RequestPart @Nullable List<MultipartFile> file) throws IOException {
 
         List<String> url = new ArrayList<>();
-
-        for (MultipartFile m : file) {
-            Map result = null;
-            if (file == null)
-                url = null;
-            else if (file.isEmpty())
-                url = null;
-            else
-                result = uploadToCloudInterface.uploadImage(m.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
-            if (result != null)
-                url.add(result.get("secure_url").toString());
+        if (!(file == null)) {
+            for (MultipartFile m : file) {
+                Map result = null;
+                if (file == null)
+                    url = null;
+                else if (file.isEmpty())
+                    url = null;
+                else
+                    result = uploadToCloudInterface.uploadImage(m.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+                if (result != null)
+                    url.add(result.get("secure_url").toString());
+            }
         }
-
         try {
             MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -123,6 +127,15 @@ public class UserController {
         return ResponseEntity.ok(iUserService.popular(latitude, longitude));
     }
 
+    @GetMapping("/view/cafe")
+    ResponseEntity<?> cafe(@Param("latitude") Double latitude, @Param("longitude") Double longitude) {
+        return ResponseEntity.ok(iUserService.cafe(latitude, longitude));
+    }
+
+    @GetMapping("/view/lunch")
+    ResponseEntity<?> lunch(@Param("latitude") Double latitude, @Param("longitude") Double longitude) {
+        return ResponseEntity.ok(iUserService.lunch(latitude, longitude));
+    }
 
     @PatchMapping("/profile")
     ResponseEntity<?> updateProfile(@RequestHeader String authorization, @ModelAttribute MultipartFile file) throws IOException {
@@ -142,12 +155,20 @@ public class UserController {
 
         return ResponseEntity.of(Optional.of(iUserService.editProfile(profilePic, usersList.get(0).getUserId())));
     }
-   @GetMapping("/view/reviewPhotos")
+
+    @GetMapping("/view/reviewPhotos")
     ResponseEntity<?> getReviewPhotos(@RequestParam long placeId) {
         return ResponseEntity.ok(iUserService.images(placeId));
     }
 
-
+    @GetMapping("/view/details")
+    ResponseEntity<?> getDetails(@RequestParam long placeId) {
+        return ResponseEntity.ok(iUserService.placeDetails(placeId));
+    }
+    @GetMapping("/view/search")
+    public ResponseEntity<?>  getSearch(@Param("option") String option, @Param("searchRequest") SearchRequest searchRequest, @Param("latitude") Double latitude, @Param("longitude") Double longitude) throws CustomException {
+        return ResponseEntity.ok(iUserService.search(option,searchRequest,latitude,longitude));
+    }
 
 }
 
