@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -33,24 +31,22 @@ public class AdminController {
     ImageUploadInterface uploadToCloudInterface;
 
     @PostMapping("/places")
-    ResponseEntity<?> addPlaces(@ModelAttribute Places places, @RequestParam @Nullable List<MultipartFile> file) throws IOException {
-        List<String> url = new ArrayList<>();
+    ResponseEntity<?> addPlaces(@ModelAttribute Places places, @RequestParam @Nullable MultipartFile file) throws IOException {
+
+        String url = "";
+        Map result = null;
         if (file == null) {
-            for (MultipartFile m : file) {
-                Map result = null;
-                if (file == null)
-                    url = null;
-                else if (file.isEmpty())
-                    url = null;
-                else
-                    result = uploadToCloudInterface.uploadImage(m.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
-                if (result != null)
-                    url.add(result.get("secure_url").toString());
-            }
-        }
+          url=null;
+        } else if (file.isEmpty())
+            url = null;
+        else
+            result = uploadToCloudInterface.uploadImage(file.getBytes(), ObjectUtils.asMap("resource type", "auto"));
+        if (result != null)
+            url = (result.get("secure_url").toString());
+
         try {
             MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            return ResponseEntity.of(Optional.of(iAdminService.addPlaces(userDetails.getUsers(), places, null)));
+            return ResponseEntity.of(Optional.of(iAdminService.addPlaces(userDetails.getUsers(),places,url)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("places already added");
         }

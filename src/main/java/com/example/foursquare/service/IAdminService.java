@@ -3,10 +3,9 @@ package com.example.foursquare.service;
 import com.example.foursquare.exception.CustomException;
 import com.example.foursquare.model.Places;
 import com.example.foursquare.model.Users;
-import org.springframework.web.multipart.MultipartFile;
 
 public interface IAdminService {
-    String addPlaces(Users users, Places places, MultipartFile file) throws CustomException;
+    String addPlaces(Users users, Places places, String url) throws CustomException;
 
     int deletePlaces(long placeId);
 
