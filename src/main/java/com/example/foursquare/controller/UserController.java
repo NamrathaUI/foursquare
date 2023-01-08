@@ -45,7 +45,7 @@ public class UserController {
     }
 
     @GetMapping("favourites")
-    public ResponseEntity<List<PlaceResponse>> viewFavouritePlaces(@Param("latitude") double latitude, @Param("longitude") double longitude) {
+    public ResponseEntity<List<PlaceResponse>> viewFavouritePlaces(@Param("latitude") double latitude, @Param("longitude") double longitude) throws CustomException {
         MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(iUserService.viewFavourite(userDetails.getUsers(), latitude, longitude));
 
@@ -81,7 +81,7 @@ public class UserController {
     }
 
     @PostMapping("/review")
-    ResponseEntity<?> review(@RequestParam Long placeId, @RequestParam String review, @RequestPart @Nullable List<MultipartFile> file) throws IOException {
+    ResponseEntity<?> review(@RequestParam Long placeId, @RequestParam  @Nullable String review, @RequestPart @Nullable List<MultipartFile> file) throws IOException {
 
         List<String> url = new ArrayList<>();
         if (!(file == null)) {
@@ -113,27 +113,27 @@ public class UserController {
     }
 
     @GetMapping("/view/nearMe")
-    ResponseEntity<?> nearMe(@Param("latitude") Double latitude, @Param("longitude") Double longitude) {
+    ResponseEntity<?> nearMe(@Param("latitude") Double latitude, @Param("longitude") Double longitude) throws CustomException {
         return ResponseEntity.ok(iUserService.nearMe(latitude, longitude));
     }
 
     @GetMapping("/view/topPick")
-    ResponseEntity<?> topPick(@Param("latitude") Double latitude, @Param("longitude") Double longitude) {
+    ResponseEntity<?> topPick(@Param("latitude") Double latitude, @Param("longitude") Double longitude) throws CustomException {
         return ResponseEntity.ok(iUserService.topPick(latitude, longitude));
     }
 
     @GetMapping("/view/popular")
-    ResponseEntity<?> popular(@Param("latitude") Double latitude, @Param("longitude") Double longitude) {
+    ResponseEntity<?> popular(@Param("latitude") Double latitude, @Param("longitude") Double longitude) throws CustomException {
         return ResponseEntity.ok(iUserService.popular(latitude, longitude));
     }
 
     @GetMapping("/view/cafe")
-    ResponseEntity<?> cafe(@Param("latitude") Double latitude, @Param("longitude") Double longitude) {
+    ResponseEntity<?> cafe(@Param("latitude") Double latitude, @Param("longitude") Double longitude) throws CustomException {
         return ResponseEntity.ok(iUserService.cafe(latitude, longitude));
     }
 
     @GetMapping("/view/lunch")
-    ResponseEntity<?> lunch(@Param("latitude") Double latitude, @Param("longitude") Double longitude) {
+    ResponseEntity<?> lunch(@Param("latitude") Double latitude, @Param("longitude") Double longitude) throws CustomException {
         return ResponseEntity.ok(iUserService.lunch(latitude, longitude));
     }
 
@@ -165,10 +165,29 @@ public class UserController {
     ResponseEntity<?> getDetails(@RequestParam long placeId) {
         return ResponseEntity.ok(iUserService.placeDetails(placeId));
     }
-    @GetMapping("/view/search")
-    public ResponseEntity<?>  getSearch(@Param("option") String option, @Param("searchRequest") SearchRequest searchRequest, @Param("latitude") Double latitude, @Param("longitude") Double longitude) throws CustomException {
-        return ResponseEntity.ok(iUserService.search(option,searchRequest,latitude,longitude));
+    @PostMapping("/view/search")
+    public ResponseEntity<?>  getSearch(@RequestBody  SearchRequest searchRequest ) throws CustomException {
+        return ResponseEntity.ok(iUserService.search(searchRequest));
     }
 
+    @GetMapping("/view/aboutUs")
+    ResponseEntity<?> getAboutUs() {
+        return ResponseEntity.ok(iUserService.viewAboutUs());
+    }
+    @GetMapping("/profile")
+    ResponseEntity<?> getProfile() {
+        MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(iUserService.viewProfile(userDetails.getUsers().getUserId()));
+    }
+
+    @GetMapping("/favourite/filter")
+    ResponseEntity<?> favouriteFilter(@Param("option") String option, @Param("searchRequest") SearchRequest searchRequest, @Param("latitude") Double latitude, @Param("longitude") Double longitude) throws CustomException {
+        MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(iUserService.filterFavourite(userDetails.getUsers().getUserId(),option,searchRequest,latitude,longitude));
+    }
+    @GetMapping("/view/nearByPlace")
+    ResponseEntity<?> nearByPlace(@RequestParam double longitude,@RequestParam double latitude) throws CustomException {
+      return ResponseEntity.ok(iUserService.nearByPlace(longitude,latitude))  ;
+    }
 }
 

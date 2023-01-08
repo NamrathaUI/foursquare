@@ -2,8 +2,12 @@ package com.example.foursquare.responseModel;
 
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
 public class ImageResponse {
-    private long reviewId;
+    private long review_photo_id;
     private String reviewPics;
+    private String profilePic;
+    private LocalDate review_photo_date;
 }

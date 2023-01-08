@@ -74,9 +74,9 @@ public class AuthenticationController {
             throw new RuntimeException(e);
         }
     }
-//    @PostMapping("/logout")
-//    ResponseEntity<?> logout(@RequestHeader String authorization) throws CustomException {
-//        return ResponseEntity.ok(iAuthService.logout(authorization));
-//    }
+    @PostMapping("/logout")
+    ResponseEntity<?> logout(@RequestHeader String authorization) throws CustomException {
+        return ResponseEntity.ok(iAuthService.logout(authorization));
+    }
 }
 

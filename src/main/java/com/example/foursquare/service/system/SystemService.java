@@ -19,4 +19,13 @@ public class SystemService implements SystemInterface {
     }
 
 
-}
+    @Override
+    public boolean verifyLatLong(double latitude,double longitude){
+        if(latitude<=0 || longitude<=0){
+            return  true;
+        }
+        return false;
+        }
+    }
+
+

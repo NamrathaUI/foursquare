@@ -11,6 +11,7 @@ public class Places {
     private long placeId;
     private String name;
     private String address;
+    private String city;
     private String type;
     private int priceRange;
     private String phoneNumber;

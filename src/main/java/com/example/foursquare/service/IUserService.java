@@ -3,7 +3,6 @@ package com.example.foursquare.service;
 import com.example.foursquare.exception.CustomException;
 import com.example.foursquare.model.Feedback;
 import com.example.foursquare.model.Ratings;
-import com.example.foursquare.model.ReviewPhotos;
 import com.example.foursquare.model.Users;
 
 import com.example.foursquare.requestModel.SearchRequest;
@@ -15,7 +14,7 @@ import java.util.List;
 public interface IUserService {
     String addFavourite(Users users, long placeId);
 
-    List<PlaceResponse> viewFavourite(Users users, double latitude, double longitude);
+    List<PlaceResponse> viewFavourite(Users users, double latitude, double longitude) throws CustomException;
 
     String giveRatings(Users users, long placeId, float numberOfStarsRated) throws CustomException;
 
@@ -23,14 +22,14 @@ public interface IUserService {
 
     List<ReviewResponse> viewReview(long placeId);
 
-    List<PlaceResponse> nearMe(double latitude, double longitude);
+    List<PlaceResponse> nearMe(double latitude, double longitude) throws CustomException;
 
-    List<PlaceResponse> topPick(double latitude, double longitude);
+    List<PlaceResponse> topPick(double latitude, double longitude) throws CustomException;
 
-    List<PlaceResponse> popular(double latitude, double longitude);
-    List<PlaceResponse> cafe(double latitude,double longitude);
+    List<PlaceResponse> popular(double latitude, double longitude) throws CustomException;
+    List<PlaceResponse> cafe(double latitude,double longitude) throws CustomException;
 
-    List<PlaceResponse> lunch(double latitude, double longitude);
+    List<PlaceResponse> lunch(double latitude, double longitude) throws CustomException;
 
     List<Ratings> viewRatings(long placeId);
 
@@ -44,9 +43,14 @@ public interface IUserService {
     List<ImageResponse> images(long placeId);
     List<PlaceOverviewResponse> placeDetails(long placeId);
 
+    List<PlaceResponse> search( SearchRequest searchRequest) throws CustomException;
 
-    List<PlaceResponse> search(String option, SearchRequest searchRequest, double latitude, double longitude) throws CustomException;
+    String viewAboutUs();
+
+    ProfileResponse viewProfile(long userId);
 
 
+    List<PlaceResponse> filterFavourite(long userId, String option, SearchRequest searchRequest, double latitude, double longitude) throws CustomException;
 
+    List<NearPlaceResponse> nearByPlace(double longitude,double latitude) throws CustomException;
 }

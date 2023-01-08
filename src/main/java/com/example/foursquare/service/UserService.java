@@ -4,6 +4,7 @@ import com.example.foursquare.exception.CustomException;
 import com.example.foursquare.model.*;
 import com.example.foursquare.requestModel.SearchRequest;
 import com.example.foursquare.responseModel.*;
+import com.example.foursquare.service.system.SystemInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -18,11 +20,14 @@ import java.util.*;
 public class UserService implements IUserService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private SystemInterface systemInterface;
 
     @Override
     public String addFavourite(Users users, long placeId) {
 
-        List<Places> places = jdbcTemplate.query("select *from places where place_id=?", new BeanPropertyRowMapper<>(Places.class), placeId);
+        List<Places> places = jdbcTemplate.query("select * " +
+                "from places where place_id=?", new BeanPropertyRowMapper<>(Places.class), placeId);
         if (places.isEmpty()) {
             return "places not found";
         }
@@ -36,12 +41,14 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public List<PlaceResponse> viewFavourite(Users users, double latitude, double longitude) {
+    public List<PlaceResponse> viewFavourite(Users users, double latitude, double longitude) throws CustomException {
+        if (systemInterface.verifyLatLong(latitude, longitude))
+            throw new CustomException("Latitude or Longitude cannot be negative or zero");
         final int r = 6371;
         List<PlaceResponse> placeResponseList = new ArrayList<>();
         longitude = Math.toRadians(longitude);
         latitude = Math.toRadians(latitude);
-        List<Places> places = jdbcTemplate.query("select * from places where place_id in (select place_id from favourites where user_id=?)", new BeanPropertyRowMapper<>(Places.class), users.getUserId());
+        List<Places> places = jdbcTemplate.query("select * from places where place_id in (select place_id from favourites where user_id=?) ", new BeanPropertyRowMapper<>(Places.class), users.getUserId());
         if (!(places.isEmpty())) {
             for (Places p : places) {
 
@@ -108,22 +115,54 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public String addReview(Users users, String review, long placeId, List<String> url) throws CustomException {
-        List<Places> places = jdbcTemplate.query("select *from places where place_id=?", new BeanPropertyRowMapper<>(Places.class), placeId);
+    public String
+    addReview(Users users, String review, long placeId, List<String> url) throws CustomException {
+        List<Places> places = jdbcTemplate.query("select * from places where place_id=?", new BeanPropertyRowMapper<>(Places.class), placeId);
         if (places.isEmpty()) {
             throw new CustomException("places not found");
         }
-        List<Review> reviews = jdbcTemplate.query("select *from review where user_id=? and place_id=?", new BeanPropertyRowMapper<>(Review.class), users.getUserId(), placeId);
-        if (reviews.isEmpty()) {
-            jdbcTemplate.update("insert into review (user_id,review,place_id,review_date) values(?,?,?,?)", users.getUserId(), review, placeId, LocalDateTime.now().toString());
-            Integer reviewId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
+        List<Review> reviews = jdbcTemplate.query("select * from review where user_id=? and place_id=?", new BeanPropertyRowMapper<>(Review.class), users.getUserId(), placeId);
+        //List<ReviewPhotos> reviewPhotos = jdbcTemplate.query("select * from review_photos where user_id=? and place_id = ?", new BeanPropertyRowMapper<>(ReviewPhotos.class),users.getUserId(),placeId);
+
+        if((review==null || review.isBlank()) && (url == null || url.isEmpty())){
+           /* if(!(url==null || url.isEmpty())) {
+                for (String s : url) {
+                    if (!(s == null || s.isBlank())) {
+                        jdbcTemplate.update("insert into review_photos(review_pics,place_id,user_id) values(?,?,?) ", s, placeId, users.getUserId());
+                    }
+                }
+            }*/
+            throw  new CustomException("review  is null or photo is null");
+        }
+        if(!(review == null || review.isBlank())){
+            if(reviews.isEmpty()){
+                jdbcTemplate.update("insert into review (user_id,review,place_id,review_date) values(?,?,?,?)", users.getUserId(), review, placeId, LocalDateTime.now().toString());
+            }
+            else {
+                jdbcTemplate.update("update review set review = ? where user_id = ? and place_id = ?", review, users.getUserId(), placeId);
+            }
+        }
+
+
+        if(!(url == null || url.isEmpty())) {
             for (String s : url) {
                 if (!(s == null || s.isBlank())) {
-                    jdbcTemplate.update("insert into review_photos values(?,?)", reviewId, s);
+                    jdbcTemplate.update("insert into review_photos(review_pics,place_id,user_id,review_photo_date) values(?,?,?,?) ", s, placeId, users.getUserId(), LocalDate.now());
                 }
             }
+        }
+/*
+        if (reviews.isEmpty()) {
+                jdbcTemplate.update("insert into review (user_id,review,place_id,review_date) values(?,?,?,?)", users.getUserId(), review, placeId, LocalDateTime.now().toString());
+                Integer reviewId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
+                for (String s : url) {
+                    if (!(s == null || s.isBlank())) {
+                        jdbcTemplate.update("insert into review_photos values(?,?)", reviewId, s);
+                    }
+            }
 
-        } else {
+        }
+        else {
             jdbcTemplate.update("update review set review=? where user_id=? and place_id=?", review, users.getUserId(), placeId);
             for (String s : url) {
                 if (!(s == null || s.isBlank())) {
@@ -131,7 +170,7 @@ public class UserService implements IUserService {
                 }
             }
 
-        }
+        }*/
         return "Review added Successfully";
     }
 
@@ -141,12 +180,15 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public List<PlaceResponse> nearMe(double latitude, double longitude) {
+    public List<PlaceResponse> nearMe(double latitude, double longitude) throws CustomException {
+        if (systemInterface.verifyLatLong(latitude, longitude))
+            throw new CustomException("Latitude or Longitude cannot be negative or zero");
         final int r = 6371;
         longitude = Math.toRadians(longitude);
         latitude = Math.toRadians(latitude);
         List<Places> places = jdbcTemplate.query("select * from places", new BeanPropertyRowMapper<>(Places.class));
         List<PlaceResponse> placeResponseList = new ArrayList<>();
+
         if (!(places.isEmpty())) {
 
             for (Places p : places) {
@@ -154,7 +196,7 @@ public class UserService implements IUserService {
                 double long1 = p.getLongitude();
                 long1 = Math.toRadians(long1);
                 lat1 = Math.toRadians(lat1);
-                double distance = 0;
+                double distance = 0.0;
                 distance = r * Math.acos(Math.sin(lat1) * Math.sin(latitude) + Math.cos(lat1) * Math.cos(latitude) * Math.cos(longitude - long1));
 
 
@@ -170,8 +212,9 @@ public class UserService implements IUserService {
                 placeResponse.setPlaceId(p.getPlaceId());
                 placeResponse.setImage(p.getImages());
                 placeResponse.setPhoneNumber(p.getPhoneNumber());
+
                 placeResponse.setDistance(Double.valueOf(df.format(distance)));
-                if(placeResponse.getDistance()<50){
+                if (placeResponse.getDistance() < 50) {
                     placeResponseList.add(placeResponse);
                 }
 
@@ -190,7 +233,9 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public List<PlaceResponse> topPick(double latitude, double longitude) {
+    public List<PlaceResponse> topPick(double latitude, double longitude) throws CustomException {
+        if (systemInterface.verifyLatLong(latitude, longitude))
+            throw new CustomException("Latitude or Longitude cannot be negative or zero");
         final int r = 6371;
         longitude = Math.toRadians(longitude);
         latitude = Math.toRadians(latitude);
@@ -229,7 +274,9 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public List<PlaceResponse> popular(double latitude, double longitude) {
+    public List<PlaceResponse> popular(double latitude, double longitude) throws CustomException {
+        if (systemInterface.verifyLatLong(latitude, longitude))
+            throw new CustomException("Latitude or Longitude cannot be negative or zero");
 
         final int r = 6371;
         longitude = Math.toRadians(longitude);
@@ -275,7 +322,9 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public List<PlaceResponse> cafe(double latitude, double longitude) {
+    public List<PlaceResponse> cafe(double latitude, double longitude) throws CustomException {
+        if (systemInterface.verifyLatLong(latitude, longitude))
+            throw new CustomException("Latitude or Longitude cannot be negative or zero");
         final int r = 6371;
         longitude = Math.toRadians(longitude);
         latitude = Math.toRadians(latitude);
@@ -322,7 +371,9 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public List<PlaceResponse> lunch(double latitude, double longitude) {
+    public List<PlaceResponse> lunch(double latitude, double longitude) throws CustomException {
+        if (systemInterface.verifyLatLong(latitude, longitude))
+            throw new CustomException("Latitude or Longitude cannot be negative or zero");
 
         final int r = 6371;
         longitude = Math.toRadians(longitude);
@@ -410,8 +461,11 @@ public class UserService implements IUserService {
 
     @Override
     public List<ImageResponse> images(long placeId) {
-        List<ImageResponse> strings = jdbcTemplate.query("select * from review_photos where review_id in(select review_id from review where place_id=?)", new BeanPropertyRowMapper<>(ImageResponse.class), placeId);
-        return strings;
+       /* List<ImageResponse> strings = jdbcTemplate.query("select * from review_photos where review_id in(select review_id from review where place_id=?)", new BeanPropertyRowMapper<>(ImageResponse.class), placeId);
+        return strings;*/
+
+        List<ImageResponse> reviewPhotos = jdbcTemplate.query("select review_photo_id , review_pics, profile_pic , review_photo_date from review_photos inner join users on users.user_id = review_photos.user_id where place_id= ?", new BeanPropertyRowMapper<>(ImageResponse.class),placeId);
+        return reviewPhotos;
     }
 
     @Override
@@ -422,12 +476,14 @@ public class UserService implements IUserService {
 
 
     @Override
-    public List<PlaceResponse> search(String option, SearchRequest searchRequest, double latitude, double longitude) throws CustomException {
+    public List<PlaceResponse> search(SearchRequest searchRequest) throws CustomException {
+        if (systemInterface.verifyLatLong(searchRequest.getLatitude(), searchRequest.getLongitude()))
+            throw new CustomException("Latitude or Longitude cannot be negative or zero");
         final int r = 6371;
-        if (option == null || option.isBlank()) {
-            option = "";
+        if (searchRequest.getOption() == null || searchRequest.getOption().isBlank()) {
+            searchRequest.setOption("");
         }
-        String query = "select * from places join features on places.place_id=features.place_id where (name like'%" + option + "%' or address like'%" + option + "%')";
+        String query = "select * from places join features on places.place_id=features.place_id where (name like'%" + searchRequest.getOption() + "%' or address like'%" + searchRequest.getOption() + "%')";
         if (searchRequest != null) {
             if (!(searchRequest.getPriceRange() == null))
                 query = query + " and price_range=" + searchRequest.getPriceRange();
@@ -451,22 +507,22 @@ public class UserService implements IUserService {
             }
         }
         List<Places> places = jdbcTemplate.query(query, new BeanPropertyRowMapper<>(Places.class));
-        if (places.isEmpty()) {
+      /*  if (places.isEmpty()) {
             throw new CustomException("places not found");
-        }
+        }*/
 
         if (searchRequest.getSortBy() != null) {
             if (searchRequest.getSortBy().equalsIgnoreCase("distance")) {
                 List<PlaceResponse> placeList = new ArrayList<>();
-                longitude = Math.toRadians(longitude);
-                latitude = Math.toRadians(latitude);
+                searchRequest.setLongitude(Math.toRadians(searchRequest.getLongitude()));
+                searchRequest.setLatitude( Math.toRadians(searchRequest.getLatitude()));
                 for (Places p : places) {
                     double lat1 = p.getLatitude();
                     double long1 = p.getLongitude();
                     long1 = Math.toRadians(long1);
                     lat1 = Math.toRadians(lat1);
                     double distance = 0;
-                    distance = r * Math.acos(Math.sin(lat1) * Math.sin(latitude) + Math.cos(lat1) * Math.cos(latitude) * Math.cos(longitude - long1));
+                    distance = r * Math.acos(Math.sin(lat1) * Math.sin(searchRequest.getLatitude()) + Math.cos(lat1) * Math.cos(searchRequest.getLatitude()) * Math.cos(searchRequest.getLongitude() - long1));
 
 
                     DecimalFormat df = new DecimalFormat();
@@ -507,8 +563,8 @@ public class UserService implements IUserService {
                 }
             } else if (searchRequest.getSortBy().equalsIgnoreCase("popular")) {
 
-                longitude = Math.toRadians(longitude);
-                latitude = Math.toRadians(latitude);
+                searchRequest.setLongitude(Math.toRadians(searchRequest.getLongitude()));
+                searchRequest.setLatitude( Math.toRadians(searchRequest.getLatitude()));
                 List<PlaceResponse> placeResponseList = new ArrayList<>();
                 Map<Long, Integer> pid = new HashMap<>();
                 //     List<Places> places = jdbcTemplate.query("select * from places", new BeanPropertyRowMapper<>(Places.class));
@@ -527,7 +583,7 @@ public class UserService implements IUserService {
                     long1 = Math.toRadians(long1);
                     lat1 = Math.toRadians(lat1);
                     double distance = 0;
-                    distance = r * Math.acos(Math.sin(lat1) * Math.sin(latitude) + Math.cos(lat1) * Math.cos(latitude) * Math.cos(longitude - long1));
+                    distance = r * Math.acos(Math.sin(lat1) * Math.sin(searchRequest.getLatitude()) + Math.cos(lat1) * Math.cos(searchRequest.getLatitude()) * Math.cos(searchRequest.getLongitude() - long1));
 
 
                     DecimalFormat df = new DecimalFormat();
@@ -558,15 +614,15 @@ public class UserService implements IUserService {
 
         }
         List<PlaceResponse> placeList = new ArrayList<>();
-        longitude = Math.toRadians(longitude);
-        latitude = Math.toRadians(latitude);
+        searchRequest.setLongitude(Math.toRadians(searchRequest.getLongitude()));
+        searchRequest.setLatitude( Math.toRadians(searchRequest.getLatitude()));
         for (Places p : places) {
             double lat1 = p.getLatitude();
             double long1 = p.getLongitude();
             long1 = Math.toRadians(long1);
             lat1 = Math.toRadians(lat1);
             double distance = 0;
-            distance = r * Math.acos(Math.sin(lat1) * Math.sin(latitude) + Math.cos(lat1) * Math.cos(latitude) * Math.cos(longitude - long1));
+            distance = r * Math.acos(Math.sin(lat1) * Math.sin(searchRequest.getLatitude()) + Math.cos(lat1) * Math.cos(searchRequest.getLatitude()) * Math.cos(searchRequest.getLongitude() - long1));
 
 
             DecimalFormat df = new DecimalFormat();
@@ -589,9 +645,66 @@ public class UserService implements IUserService {
                     placeList.add(placeResponse);
                 }
             }
-
-
         }
         return placeList;
     }
+
+    @Override
+    public String viewAboutUs() {
+        return jdbcTemplate.queryForObject("select about_us from about_us", String.class);
+    }
+
+    @Override
+    public ProfileResponse viewProfile(long userId) {
+        List<Users> users =
+                jdbcTemplate.query("select * from users where user_id=?",  new BeanPropertyRowMapper<>(Users.class), userId);
+      ProfileResponse profileResponse = new ProfileResponse();
+      profileResponse.setName(users.get(0).getName());
+      profileResponse.setProfilePic(users.get(0).getProfilePic());
+      return profileResponse;
+    }
+    @Override
+    public List<PlaceResponse> filterFavourite(long userId,String option, SearchRequest searchRequest, double latitude, double longitude) throws CustomException {
+        if (systemInterface.verifyLatLong(latitude, longitude))
+            throw new CustomException("Latitude or Longitude cannot be negative or zero");
+        List<Favourites> favourites = jdbcTemplate.query("select * from favourites where user_id= ?", new BeanPropertyRowMapper<>(Favourites.class),userId);
+        List<PlaceResponse> placeResponse = new ArrayList<>();
+        List<PlaceResponse> placeResponseList = search(searchRequest);
+        for (Favourites f : favourites){
+            for (PlaceResponse p : placeResponseList){
+                if(p.getPlaceId() == f.getPlaceId()){
+                    placeResponse.add(p);
+                }
+            }
+        }
+        return placeResponse;
+    }
+
+    @Override
+    public List<NearPlaceResponse> nearByPlace(double longitude,double latitude) throws CustomException {
+        List<PlaceResponse> placeResponseList = nearMe(latitude,longitude);
+       List<NearPlaceResponse> nearPlaceResponseList= new ArrayList<>();
+       int j=1;
+        for(int i=0;i<placeResponseList.size();i++){
+            NearPlaceResponse  nearPlaceResponse=new NearPlaceResponse();
+            nearPlaceResponse.setImage(placeResponseList.get(i).getImage());
+            String city=jdbcTemplate.queryForObject("select city from places where place_id=?",String.class,placeResponseList.get(i).getPlaceId());
+            if(i==0){
+                nearPlaceResponse.setCity(city);
+                nearPlaceResponseList.add(nearPlaceResponse);
+            }
+            else {
+                if (!(nearPlaceResponseList.get(i-j).getCity().equalsIgnoreCase(city))){
+                    nearPlaceResponse.setCity(city);
+                    nearPlaceResponseList.add(nearPlaceResponse);
+                }
+                j++;
+                if(nearPlaceResponseList.size()==2){
+                    return nearPlaceResponseList;
+                }
+            }
+        }
+       return nearPlaceResponseList;
+    }
+
 }
