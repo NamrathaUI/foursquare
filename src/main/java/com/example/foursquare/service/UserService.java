@@ -228,6 +228,7 @@ public class UserService implements IUserService {
                     placeResponseList.set(j, placeResponseList.get(j + 1));
                     placeResponseList.set(j + 1, temp);
                 }
+
         return placeResponseList;
     }
 
@@ -439,14 +440,15 @@ public class UserService implements IUserService {
 
     @Override
     public String giveFeedback(Users users, String feedback) {
-        List<Feedback> feedbacks = jdbcTemplate.query("select *from feedback where user_id=?", new BeanPropertyRowMapper<>(Feedback.class), users.getUserId());
+        List<Feedback> feedbacks = jdbcTemplate.query("select * from feedback where user_id=?", new BeanPropertyRowMapper<>(Feedback.class), users.getUserId());
         if (feedbacks.isEmpty()) {
-            jdbcTemplate.update("insert into feedback(user_id,feedback) values(?,?) ", users.getUserId(), feedbacks);
+            jdbcTemplate.update("insert into feedback(user_id,feedback) values(?,?) ", users.getUserId(), feedback);
         } else {
-            jdbcTemplate.update("update feedback set feedback=? where user_id=?", feedback, users.getUserId());
+            jdbcTemplate.update("update feedback set feedback = ? where user_id=?", feedback, users.getUserId());
         }
         return "feedback added successfully";
     }
+
 
     @Override
     public List<Feedback> viewFeedback() {
@@ -460,8 +462,7 @@ public class UserService implements IUserService {
 
     @Override
     public List<ImageResponse> images(long placeId) {
-       /* List<ImageResponse> strings = jdbcTemplate.query("select * from review_photos where review_id in(select review_id from review where place_id=?)", new BeanPropertyRowMapper<>(ImageResponse.class), placeId);
-        return strings;*/
+
 
         List<ImageResponse> reviewPhotos = jdbcTemplate.query("select review_photo_id , review_pics, profile_pic , review_photo_date from review_photos inner join users on users.user_id = review_photos.user_id where place_id= ?", new BeanPropertyRowMapper<>(ImageResponse.class), placeId);
         return reviewPhotos;
@@ -517,9 +518,7 @@ public class UserService implements IUserService {
             }
         }
         List<Places> places = jdbcTemplate.query(query, new BeanPropertyRowMapper<>(Places.class));
-      /*  if (places.isEmpty()) {
-            throw new CustomException("places not found");
-        }*/
+
 
         if (searchRequest.getSortBy() != null) {
             if (searchRequest.getSortBy().equalsIgnoreCase("distance")) {

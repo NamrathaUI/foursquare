@@ -22,7 +22,7 @@ public interface IUserService {
 
     List<ReviewResponse> viewReview(long placeId);
 
-    List<PlaceResponse> nearMe(double latitude, double longitude) throws CustomException;
+    List<PlaceResponse> nearMe(double latitude, double longitude ) throws CustomException;
 
     List<PlaceResponse> topPick(double latitude, double longitude) throws CustomException;
 
