@@ -4,6 +4,7 @@ import com.cloudinary.utils.ObjectUtils;
 import com.example.foursquare.MyUserDetails;
 import com.example.foursquare.exception.CustomException;
 import com.example.foursquare.model.Places;
+import com.example.foursquare.requestModel.PlaceRequest;
 import com.example.foursquare.service.IAdminService;
 import com.example.foursquare.service.ImageUploadInterface;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class AdminController {
     ImageUploadInterface uploadToCloudInterface;
 
     @PostMapping("/places")
-    ResponseEntity<?> addPlaces(@ModelAttribute Places places, @RequestParam @Nullable MultipartFile file) throws IOException {
+    ResponseEntity<?> addPlaces(@ModelAttribute PlaceRequest placeRequest, @RequestParam @Nullable MultipartFile file) throws IOException {
 
         String url = "";
         Map result = null;
@@ -46,7 +47,7 @@ public class AdminController {
 
         try {
             MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            return ResponseEntity.of(Optional.of(iAdminService.addPlaces(userDetails.getUsers(),places,url)));
+            return ResponseEntity.of(Optional.of(iAdminService.addPlaces(userDetails.getUsers(),placeRequest,url)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("places already added");
         }

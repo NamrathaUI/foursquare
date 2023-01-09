@@ -162,8 +162,8 @@ public class UserController {
     }
 
     @GetMapping("/view/details")
-    ResponseEntity<?> getDetails(@RequestParam long placeId) {
-        return ResponseEntity.ok(iUserService.placeDetails(placeId));
+    ResponseEntity<?> getDetails(@RequestParam long placeId,@RequestParam double longitude,@RequestParam double latitude) {
+        return ResponseEntity.ok(iUserService.placeDetails(placeId, latitude,longitude ));
     }
     @PostMapping("/view/search")
     public ResponseEntity<?>  getSearch(@RequestBody  SearchRequest searchRequest ) throws CustomException {

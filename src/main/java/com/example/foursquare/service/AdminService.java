@@ -1,8 +1,8 @@
 package com.example.foursquare.service;
 
 import com.example.foursquare.exception.CustomException;
-import com.example.foursquare.model.Places;
 import com.example.foursquare.model.Users;
+import com.example.foursquare.requestModel.PlaceRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -13,14 +13,16 @@ public class AdminService implements IAdminService {
     JdbcTemplate jdbcTemplate;
 
     @Override
-    public String addPlaces(Users users, Places places, String url) throws CustomException {
+    public String addPlaces(Users users, PlaceRequest placeRequest, String url) throws CustomException {
 
         if (!(users.getRole().equalsIgnoreCase("admin"))) {
             throw new CustomException("Access Denied");
         }
 
-        jdbcTemplate.update("insert into places(name,address,type,price_range,phone_number,images,longitude,latitude,current_ratings,about_us)values (?,?,?,?,?,?,?,?,?,?) ", places.getName(), places.getAddress(), places.getType(), places.getPriceRange(), places.getPhoneNumber(), url, places.getLongitude(), places.getLatitude(), places.getCurrentRatings(), places.getAboutUs());
-
+        jdbcTemplate.update("insert into places(name,address,type,price_range,phone_number,images,longitude,latitude,current_ratings,about_us,city,cafe,lunch)values (?,?,?,?,?,?,?,?,?,?,?,?,?) ", placeRequest.getName(), placeRequest.getAddress(), placeRequest.getType(), placeRequest.getPriceRange(), placeRequest.getPhoneNumber(), url, placeRequest.getLongitude(), placeRequest.getLatitude(), placeRequest.getCurrentRatings(), placeRequest.getAboutUs(),placeRequest.getCity(),placeRequest.isCafe(),placeRequest.isLunch());
+        long id = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
+        jdbcTemplate.update("insert into  features values(?,?,?,?,?,?,?,?,?) ",id,placeRequest.isAcceptsCreditCards(),placeRequest.isDelivery(),placeRequest.isParking(),
+        placeRequest.isDogFriendly(),placeRequest.isWiFi(),placeRequest.isFamilyFriendlyPlaces(),placeRequest.isOutdoorSeating(),placeRequest.isInWalkingDistance());
         return "places added successfully";
     }
 

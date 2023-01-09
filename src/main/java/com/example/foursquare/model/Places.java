@@ -18,6 +18,8 @@ public class Places {
     private String images;
     private double longitude;
     private double latitude;
+    private Boolean lunch;
+    private Boolean cafe;
     private float currentRatings;
     private String aboutUs;
     private String isDeleted;

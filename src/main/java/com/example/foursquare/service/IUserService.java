@@ -41,7 +41,7 @@ public interface IUserService {
 
     List<Feedback> feedback(Users users,long userId);
     List<ImageResponse> images(long placeId);
-    List<PlaceOverviewResponse> placeDetails(long placeId);
+    List<PlaceOverviewResponse> placeDetails(long placeId,double latitude,double longitude);
 
     List<PlaceResponse> search( SearchRequest searchRequest) throws CustomException;
 
