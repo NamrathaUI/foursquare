@@ -113,28 +113,68 @@ public class UserController {
     }
 
     @GetMapping("/view/nearMe")
-    ResponseEntity<?> nearMe(@Param("latitude") Double latitude, @Param("longitude") Double longitude) throws CustomException {
-        return ResponseEntity.ok(iUserService.nearMe(latitude, longitude));
+    ResponseEntity<?> nearMe(@Param("latitude") Double latitude, @Param("longitude") Double longitude,@Param("limit") int limit,@Param("page") int page) throws CustomException {
+        long userId=0;
+        try{
+            MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            userId=userDetails.getUsers().getUserId();
+        }catch (ClassCastException e){
+
+        }
+
+        return ResponseEntity.ok(iUserService.nearMe(latitude, longitude,limit ,page,userId ));
     }
 
     @GetMapping("/view/topPick")
-    ResponseEntity<?> topPick(@Param("latitude") Double latitude, @Param("longitude") Double longitude) throws CustomException {
-        return ResponseEntity.ok(iUserService.topPick(latitude, longitude));
+    ResponseEntity<?> topPick(@Param("latitude") Double latitude, @Param("longitude") Double longitude,@Param("limit") int limit,@Param("page") int page) throws CustomException {
+        long userId=0;
+        try{
+            MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            userId=userDetails.getUsers().getUserId();
+        }catch (ClassCastException e){
+
+        }
+
+        return ResponseEntity.ok(iUserService.topPick(latitude, longitude, limit,page,userId ));
     }
 
     @GetMapping("/view/popular")
-    ResponseEntity<?> popular(@Param("latitude") Double latitude, @Param("longitude") Double longitude) throws CustomException {
-        return ResponseEntity.ok(iUserService.popular(latitude, longitude));
+    ResponseEntity<?> popular(@Param("latitude") Double latitude, @Param("longitude") Double longitude,@Param("limit") int limit,@Param("page") int page) throws CustomException {
+        long userId=0;
+        try{
+            MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            userId=userDetails.getUsers().getUserId();
+        }catch (ClassCastException e){
+
+        }
+
+        return ResponseEntity.ok(iUserService.popular(latitude, longitude,limit ,page,userId ));
     }
 
     @GetMapping("/view/cafe")
-    ResponseEntity<?> cafe(@Param("latitude") Double latitude, @Param("longitude") Double longitude) throws CustomException {
-        return ResponseEntity.ok(iUserService.cafe(latitude, longitude));
+    ResponseEntity<?> cafe(@Param("latitude") Double latitude, @Param("longitude") double longitude,@Param("limit") int limit,@Param("page") int page) throws CustomException {
+        long userId=0;
+        try{
+            MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            userId=userDetails.getUsers().getUserId();
+        }catch (ClassCastException e){
+
+        }
+
+        return ResponseEntity.ok(iUserService.cafe(latitude, longitude,limit ,page,userId));
     }
 
     @GetMapping("/view/lunch")
-    ResponseEntity<?> lunch(@Param("latitude") Double latitude, @Param("longitude") Double longitude) throws CustomException {
-        return ResponseEntity.ok(iUserService.lunch(latitude, longitude));
+    ResponseEntity<?> lunch(@Param("latitude") Double latitude, @Param("longitude") Double longitude,@Param("limit") int limit,@Param("page") int page) throws CustomException {
+        long userId=0;
+        try{
+            MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            userId=userDetails.getUsers().getUserId();
+        }catch (ClassCastException e){
+
+        }
+
+        return ResponseEntity.ok(iUserService.lunch(latitude, longitude,limit ,page,userId ));
     }
 
     @PatchMapping("/profile")
@@ -187,7 +227,14 @@ public class UserController {
     }
     @GetMapping("/view/nearByPlace")
     ResponseEntity<?> nearByPlace(@RequestParam double longitude,@RequestParam double latitude) throws CustomException {
-      return ResponseEntity.ok(iUserService.nearByPlace(longitude,latitude))  ;
+        long userId=0;
+        try{
+            MyUserDetails userDetails = (MyUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            userId=userDetails.getUsers().getUserId();
+        }catch (ClassCastException e){
+
+        }
+      return ResponseEntity.ok(iUserService.nearByPlace(longitude,latitude,userId ))  ;
     }
 }
 

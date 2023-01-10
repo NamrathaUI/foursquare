@@ -84,6 +84,9 @@ public class UserService implements IUserService {
 
     @Override
     public String giveRatings(Users users, long placeId, float numberOfStarsRated) throws CustomException {
+        if(numberOfStarsRated>5 || numberOfStarsRated<=0){
+            return "Rating cannot be greater than 5 or less than 0";
+        }
 
 
         List<Places> places = jdbcTemplate.query("select *from places where place_id=? ", new BeanPropertyRowMapper<>(Places.class), placeId);
@@ -179,10 +182,14 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public List<PlaceResponse> nearMe(double latitude, double longitude) throws CustomException {
+    public List<PlaceResponse> nearMe(double latitude, double longitude, int limit, int page, long userId) throws CustomException {
         if (systemInterface.verifyLatLong(latitude, longitude))
             throw new CustomException("Latitude or Longitude cannot be negative or zero");
         final int r = 6371;
+        if(page<=0){
+            page = Math.max(0,page-1);
+        }
+
         longitude = Math.toRadians(longitude);
         latitude = Math.toRadians(latitude);
         List<Places> places = jdbcTemplate.query("select * from places", new BeanPropertyRowMapper<>(Places.class));
@@ -211,7 +218,7 @@ public class UserService implements IUserService {
                 placeResponse.setPlaceId(p.getPlaceId());
                 placeResponse.setImage(p.getImages());
                 placeResponse.setPhoneNumber(p.getPhoneNumber());
-
+                placeResponse.setFavourite(jdbcTemplate.queryForObject("select count(*) from favourites  where user_id=? and place_id=?", Integer.class,userId,p.getPlaceId())==1);
                 placeResponse.setDistance(Double.valueOf(df.format(distance)));
                 if (placeResponse.getDistance() < 50) {
                     placeResponseList.add(placeResponse);
@@ -228,18 +235,42 @@ public class UserService implements IUserService {
                     placeResponseList.set(j, placeResponseList.get(j + 1));
                     placeResponseList.set(j + 1, temp);
                 }
+        if(page==0){
+            page=1;
+        }
+        if(page==1){
+            if(limit>placeResponseList.size()){
+                limit=placeResponseList.size();
+            }
 
-        return placeResponseList;
+        }
+
+        int startLimit = 0;
+        int endLimit = limit;
+
+
+        if (page==1)
+            return placeResponseList.subList(startLimit,endLimit);
+        else {
+            startLimit =( (limit * page ) - limit ) ;
+            if(startLimit>placeResponseList.size()){
+                return new ArrayList<>();
+            }
+            endLimit=limit*page;
+            return placeResponseList.subList(startLimit,endLimit);
+        }
+      //  return placeResponseList;
     }
 
     @Override
-    public List<PlaceResponse> topPick(double latitude, double longitude) throws CustomException {
+    public List<PlaceResponse> topPick(double latitude, double longitude, int limit, int page, long userId) throws CustomException {
         if (systemInterface.verifyLatLong(latitude, longitude))
             throw new CustomException("Latitude or Longitude cannot be negative or zero");
         final int r = 6371;
+
         longitude = Math.toRadians(longitude);
         latitude = Math.toRadians(latitude);
-        List<Places> places = jdbcTemplate.query("select * from places order by current_ratings desc ", new BeanPropertyRowMapper<>(Places.class));
+        List<Places> places = jdbcTemplate.query("select * from places order by current_ratings desc limit ? offset ?", new BeanPropertyRowMapper<>(Places.class),limit ,page);
         List<PlaceResponse> placeResponseList = new ArrayList<>();
         if (!(places.isEmpty())) {
 
@@ -265,19 +296,23 @@ public class UserService implements IUserService {
                 placeResponse.setImage(p.getImages());
                 placeResponse.setPhoneNumber(p.getPhoneNumber());
                 placeResponse.setDistance(Double.valueOf(df.format(distance)));
+                placeResponse.setFavourite(jdbcTemplate.queryForObject("select count(*) from favourites  where user_id=? and place_id=?", Integer.class,userId,p.getPlaceId())==1);
 
                 placeResponseList.add(placeResponse);
 
             }
         }
+
         return placeResponseList;
     }
 
     @Override
-    public List<PlaceResponse> popular(double latitude, double longitude) throws CustomException {
+    public List<PlaceResponse> popular(double latitude, double longitude, int limit, int page, long userId) throws CustomException {
         if (systemInterface.verifyLatLong(latitude, longitude))
             throw new CustomException("Latitude or Longitude cannot be negative or zero");
-
+        if(page<=0){
+            page = Math.max(0,page-1);
+        }
         final int r = 6371;
         longitude = Math.toRadians(longitude);
         latitude = Math.toRadians(latitude);
@@ -315,17 +350,46 @@ public class UserService implements IUserService {
             placeResponse.setImage(p.get(0).getImages());
             placeResponse.setPhoneNumber(p.get(0).getPhoneNumber());
             placeResponse.setDistance(Double.valueOf(df.format(distance)));
+            placeResponse.setFavourite(jdbcTemplate.queryForObject("select count(*) from favourites  where user_id=? and place_id=?", Integer.class,userId,p.get(0).getPlaceId())==1);
 
             placeResponseList.add(placeResponse);
         }
-        return placeResponseList;
+        if(page==0){
+            page=1;
+        }
+        if(page==1){
+            if(limit>placeResponseList.size()){
+                limit=placeResponseList.size();
+            }
+
+        }
+
+
+        int startLimit = 0;
+        int endLimit = limit;
+
+
+        if (page==1)
+            return placeResponseList.subList(startLimit,endLimit);
+        else {
+            startLimit =( (limit * page ) - limit ) ;
+            if(startLimit>placeResponseList.size()){
+                return new ArrayList<>();
+            }
+            endLimit=limit*page;
+            return placeResponseList.subList(startLimit,endLimit);
+        }
+        //return placeResponseList;
     }
 
     @Override
-    public List<PlaceResponse> cafe(double latitude, double longitude) throws CustomException {
+    public List<PlaceResponse> cafe(double latitude, double longitude, int limit, int page,long userId) throws CustomException {
         if (systemInterface.verifyLatLong(latitude, longitude))
             throw new CustomException("Latitude or Longitude cannot be negative or zero");
         final int r = 6371;
+        if(page<=0){
+            page = Math.max(0,page-1);
+        }
         longitude = Math.toRadians(longitude);
         latitude = Math.toRadians(latitude);
         List<Places> places = jdbcTemplate.query("select *from places where cafe=true", new BeanPropertyRowMapper<>(Places.class));
@@ -354,7 +418,7 @@ public class UserService implements IUserService {
                 placeResponse.setImage(p.getImages());
                 placeResponse.setPhoneNumber(p.getPhoneNumber());
                 placeResponse.setDistance(Double.valueOf(df.format(distance)));
-
+                placeResponse.setFavourite(jdbcTemplate.queryForObject("select count(*) from favourites  where user_id=? and place_id=?", Integer.class,userId,p.getPlaceId())==1);
                 placeResponseList.add(placeResponse);
 
             }
@@ -367,14 +431,41 @@ public class UserService implements IUserService {
                     placeResponseList.set(j, placeResponseList.get(j + 1));
                     placeResponseList.set(j + 1, temp);
                 }
-        return placeResponseList;
+        if(page==0){
+            page=1;
+        }
+        if(page==1){
+            if(limit>placeResponseList.size()){
+                limit=placeResponseList.size();
+            }
+
+        }
+
+
+        int startLimit = 0;
+        int endLimit = limit;
+
+
+        if (page==1)
+            return placeResponseList.subList(startLimit,endLimit);
+        else {
+            startLimit =( (limit * page ) - limit ) ;
+            if(startLimit>placeResponseList.size()){
+                return new ArrayList<>();
+            }
+            endLimit=limit*page;
+            return placeResponseList.subList(startLimit,endLimit);
+        }
+        //return placeResponseList;
     }
 
     @Override
-    public List<PlaceResponse> lunch(double latitude, double longitude) throws CustomException {
+    public List<PlaceResponse> lunch(double latitude, double longitude, int limit, int page, long userId) throws CustomException {
         if (systemInterface.verifyLatLong(latitude, longitude))
             throw new CustomException("Latitude or Longitude cannot be negative or zero");
-
+        if(page<=0){
+            page = Math.max(0,page-1);
+        }
         final int r = 6371;
         longitude = Math.toRadians(longitude);
         latitude = Math.toRadians(latitude);
@@ -404,6 +495,7 @@ public class UserService implements IUserService {
                 placeResponse.setImage(p.getImages());
                 placeResponse.setPhoneNumber(p.getPhoneNumber());
                 placeResponse.setDistance(Double.valueOf(df.format(distance)));
+                placeResponse.setFavourite(jdbcTemplate.queryForObject("select count(*) from favourites  where user_id=? and place_id=?", Integer.class,userId,p.getPlaceId())==1);
 
                 placeResponseList.add(placeResponse);
 
@@ -417,7 +509,32 @@ public class UserService implements IUserService {
                     placeResponseList.set(j, placeResponseList.get(j + 1));
                     placeResponseList.set(j + 1, temp);
                 }
-        return placeResponseList;
+        if(page==0){
+            page=1;
+        }
+        if(page==1){
+            if(limit>placeResponseList.size()){
+                limit=placeResponseList.size();
+            }
+
+        }
+
+
+        int startLimit = 0;
+        int endLimit = limit;
+
+
+        if (page==1)
+            return placeResponseList.subList(startLimit,endLimit);
+        else {
+            startLimit =( (limit * page ) - limit ) ;
+            if(startLimit>placeResponseList.size()){
+                return new ArrayList<>();
+            }
+            endLimit=limit*page;
+            return placeResponseList.subList(startLimit,endLimit);
+        }
+        //return placeResponseList;
     }
 
 
@@ -464,7 +581,7 @@ public class UserService implements IUserService {
     public List<ImageResponse> images(long placeId) {
 
 
-        List<ImageResponse> reviewPhotos = jdbcTemplate.query("select review_photo_id , review_pics, profile_pic , review_photo_date from review_photos inner join users on users.user_id = review_photos.user_id where place_id= ?", new BeanPropertyRowMapper<>(ImageResponse.class), placeId);
+        List<ImageResponse> reviewPhotos = jdbcTemplate.query("select review_photo_id , review_pics, profile_pic ,name, review_photo_date from review_photos inner join users on users.user_id = review_photos.user_id where place_id= ?", new BeanPropertyRowMapper<>(ImageResponse.class), placeId);
         return reviewPhotos;
     }
 
@@ -485,7 +602,6 @@ public class UserService implements IUserService {
         return responses;
     }
 
-
     @Override
     public List<PlaceResponse> search(SearchRequest searchRequest) throws CustomException {
         if (systemInterface.verifyLatLong(searchRequest.getLatitude(), searchRequest.getLongitude()))
@@ -494,7 +610,7 @@ public class UserService implements IUserService {
         if (searchRequest.getOption() == null || searchRequest.getOption().isBlank()) {
             searchRequest.setOption("");
         }
-        String query = "select * from places join features on places.place_id=features.place_id where (name like'%" + searchRequest.getOption() + "%' or city like'%" + searchRequest.getOption() + "%')";
+        String query = "select * from places join features on places.place_id=features.place_id where (name like'%" + searchRequest.getOption() + "%' or city like'%" + searchRequest.getOption()+"%' or type like '%"+ searchRequest.getOption()+"%')";
         if (searchRequest != null) {
             if (!(searchRequest.getPriceRange() == null))
                 query = query + " and price_range=" + searchRequest.getPriceRange();
@@ -691,8 +807,8 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public List<NearPlaceResponse> nearByPlace(double longitude, double latitude) throws CustomException {
-        List<PlaceResponse> placeResponseList = nearMe(latitude, longitude);
+    public List<NearPlaceResponse> nearByPlace(double longitude, double latitude, long userId) throws CustomException {
+        List<PlaceResponse> placeResponseList = nearMe(latitude, longitude,Integer.MAX_VALUE,0,userId );
         List<NearPlaceResponse> nearPlaceResponseList = new ArrayList<>();
         int j = 1;
         for (int i = 0; i < placeResponseList.size(); i++) {

@@ -22,15 +22,12 @@ public interface IUserService {
 
     List<ReviewResponse> viewReview(long placeId);
 
-    List<PlaceResponse> nearMe(double latitude, double longitude ) throws CustomException;
+    List<PlaceResponse> nearMe(double latitude, double longitude,int limit ,int page ,long userId) throws CustomException;
+    List<PlaceResponse> topPick(double latitude, double longitude,int limit,int page,long userId) throws CustomException;
 
-    List<PlaceResponse> topPick(double latitude, double longitude) throws CustomException;
-
-    List<PlaceResponse> popular(double latitude, double longitude) throws CustomException;
-    List<PlaceResponse> cafe(double latitude,double longitude) throws CustomException;
-
-    List<PlaceResponse> lunch(double latitude, double longitude) throws CustomException;
-
+    List<PlaceResponse> popular(double latitude, double longitude,int limit,int page,long userId) throws CustomException;
+    List<PlaceResponse> cafe(double latitude,double longitude,int limit ,int page, long userId) throws CustomException;
+    List<PlaceResponse> lunch(double latitude, double longitude,int limit,int page,long userId) throws CustomException;
     List<Ratings> viewRatings(long placeId);
 
     UserResponse editProfile(String profilePic, long userId) throws IOException;
@@ -42,15 +39,12 @@ public interface IUserService {
     List<Feedback> feedback(Users users,long userId);
     List<ImageResponse> images(long placeId);
     List<PlaceOverviewResponse> placeDetails(long placeId,double latitude,double longitude);
-
     List<PlaceResponse> search( SearchRequest searchRequest) throws CustomException;
-
     String viewAboutUs();
-
     ProfileResponse viewProfile(long userId);
-
-
     List<PlaceResponse> filterFavourite(long userId, String option, SearchRequest searchRequest, double latitude, double longitude) throws CustomException;
 
-    List<NearPlaceResponse> nearByPlace(double longitude,double latitude) throws CustomException;
+    List<NearPlaceResponse> nearByPlace(double longitude,double latitude,long userId) throws CustomException;
+
+
 }

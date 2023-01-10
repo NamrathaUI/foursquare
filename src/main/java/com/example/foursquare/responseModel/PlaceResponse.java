@@ -13,5 +13,6 @@ public class PlaceResponse {
     private float ratings;
     private String image;
     private String phoneNumber;
+    private boolean favourite;
 
 }

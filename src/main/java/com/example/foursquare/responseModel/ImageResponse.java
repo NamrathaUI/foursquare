@@ -9,5 +9,6 @@ public class ImageResponse {
     private long review_photo_id;
     private String reviewPics;
     private String profilePic;
+    private String name;
     private LocalDate review_photo_date;
 }
